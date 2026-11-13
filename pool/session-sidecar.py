@@ -194,6 +194,12 @@ QUOTA_429_MARKS = (b"usage limit reached", b"usage limit exceeded",
                    b"Extra Usage", b"Go Plus", b"insufficient_quota")
 QUOTA_FAILOVER_ATTEMPTS = max(0, int(os.environ.get("POOL_QUOTA_FAILOVER_ATTEMPTS") or 2))
 HEADER_FAILOVER_ATTEMPTS = max(0, int(os.environ.get("POOL_HEADER_FAILOVER_ATTEMPTS") or 1))
+# 2026-11-13 11:50 实锤：guard 因账号集合变化 `docker restart litellm`，sidecar 换到 a5 后
+# 仍连续收到 `Connection reset by peer`（容器启动中）；原逻辑只换 1 次，3 个客户端重试全部 502。
+# 传输层 reset/refused 不等待直接 502 太脆：这里按 0.5/1/2/3s 退避重试（可换号则换号），
+# 总预算默认 4 次（约 6.5s），足以覆盖一次容器重启的启动窗口；只有真正持续不可用才 502。
+TRANSPORT_FAILOVER_ATTEMPTS = max(0, int(os.environ.get("POOL_TRANSPORT_FAILOVER_ATTEMPTS") or 4))
+TRANSPORT_FAILOVER_DELAY_S = max(0.0, float(os.environ.get("POOL_TRANSPORT_FAILOVER_DELAY_S") or 0.5))
 
 
 def _admission_retry_after_s(body):
@@ -1074,6 +1080,15 @@ def resolve_pin(tree, model):
     return resolve_pin_ex(tree, model)[:3]
 
 
+def _is_transport_error(err):
+    """连接被重置/拒绝/半关闭：通常是 LiteLLM 重启、连接池更新或代理瞬时故障，适合退避重试。"""
+    try:
+        return isinstance(err, (ConnectionResetError, ConnectionRefusedError, BrokenPipeError,
+                                http.client.RemoteDisconnected, http.client.IncompleteRead))
+    except Exception:
+        return False
+
+
 def _alias_key_of_body(send_body):
     """从已被改写的请求体 model（<model>@aN[sK]）里取当前账号 key_ref；取不到返回 None。"""
     try:
@@ -1776,6 +1791,7 @@ class Handler(BaseHTTPRequestHandler):
             # 重试 HEADER_WAIT_ATTEMPTS 次；全失败后若还有健康账号，改写到另一个别名再试，
             # 避免 3×120s 后直接 502。
             _hdr_failovers = 0
+            _transport_retries = 0
             while True:
                 conn.request(method, self.path, body=send_body if send_body else None,
                              headers=hdrs)
@@ -1785,6 +1801,33 @@ class Handler(BaseHTTPRequestHandler):
                     self._hdr_s = time.monotonic() - _hdr_t0
                     break
                 except Exception as _hdr_err:
+                    # 2026-11-13：容器重启/连接池更新造成的 reset/refused 先退避重试，
+                    # 不要立刻 502；有别的健康账号就换号，没有就同号等容器起来。
+                    if (_is_transport_error(_hdr_err)
+                            and _transport_retries < TRANSPORT_FAILOVER_ATTEMPTS
+                            and _tree and _base_model and send_body):
+                        _transport_retries += 1
+                        _delay = min(TRANSPORT_FAILOVER_DELAY_S * (2 ** (_transport_retries - 1)), 3.0)
+                        _cur = _alias_key_of_body(send_body)
+                        if _cur:
+                            _failed_keys.add(_cur)
+                        _fo = failover_rewrite(send_body, hdrs, _tree, _base_model, _failed_keys)
+                        _new_key = None
+                        if _fo:
+                            send_body, hdrs, _psess, _new_key, _new_alias = _fo
+                        slog("upstream-transport-retry %d/%d sess=%s from=%s to=%s err=%s delay=%.1fs"
+                             % (_transport_retries, TRANSPORT_FAILOVER_ATTEMPTS, sess,
+                                _cur or "?", _new_key or "same", str(_hdr_err)[:80], _delay))
+                        try:
+                            time.sleep(max(0.0, _delay))
+                        except Exception:
+                            pass
+                        try:
+                            conn.close()
+                        except Exception:
+                            pass
+                        conn = http.client.HTTPConnection(UP_HOST, UP_PORT, timeout=3600)
+                        continue
                     if (_hdr_failovers >= HEADER_FAILOVER_ATTEMPTS
                             or not _tree or not _base_model or not send_body):
                         raise

@@ -50,11 +50,14 @@ def free_port():
 class FakeUpstream:
     """按 model 里的账号号决定响应：quota_accounts → 429；hang_accounts → 挂住等超时；其余 200。"""
 
-    def __init__(self, quota_accounts=(), hang_accounts=()):
+    def __init__(self, quota_accounts=(), hang_accounts=(), reset_accounts=(), reset_hits=1):
         self.hits = []
         self.models = []
         self.quota_accounts = set(quota_accounts or ())
         self.hang_accounts = set(hang_accounts or ())
+        self.reset_accounts = set(reset_accounts or ())
+        self.reset_hits = reset_hits
+        self.reset_seen = 0
         outer = self
 
         class H(BaseHTTPRequestHandler):
@@ -77,6 +80,10 @@ class FakeUpstream:
                 m = _re.search(r"@a([0-9]+)", model)
                 if m:
                     acct = int(m.group(1))
+                if acct in outer.reset_accounts and outer.reset_seen < outer.reset_hits:
+                    outer.reset_seen += 1
+                    self.close_connection = True
+                    return
                 if acct in outer.hang_accounts:
                     time.sleep(3)
                     try:
@@ -149,16 +156,19 @@ def load_sidecar(home):
 
 
 def run_case(label, quota_accounts, hang_accounts, expect_client, expect_hits,
-             header_timeout=None):
+             header_timeout=None, reset_accounts=(), reset_hits=1):
     home = tempfile.mkdtemp(prefix="sidecar-quota-")
     write_pool_home(home)
     mod = load_sidecar(home)
+    mod.TRANSPORT_FAILOVER_ATTEMPTS = 2
+    mod.TRANSPORT_FAILOVER_DELAY_S = 0.01
     if header_timeout is not None:
         mod.HEADER_WAIT_TIMEOUT_S = header_timeout
         mod.HEADER_WAIT_ATTEMPTS = 1
         mod.HEADER_WAIT_RETRY_DELAY_S = 0
         mod.HEADER_WAIT_WARN_S = 0
-    up = FakeUpstream(quota_accounts=quota_accounts, hang_accounts=hang_accounts)
+    up = FakeUpstream(quota_accounts=quota_accounts, hang_accounts=hang_accounts,
+                      reset_accounts=reset_accounts, reset_hits=reset_hits)
     mod.UP_HOST, mod.UP_PORT = "127.0.0.1", up.port
     logs = []
     mod.slog = logs.append
@@ -185,7 +195,7 @@ def run_case(label, quota_accounts, hang_accounts, expect_client, expect_hits,
     up.close()
     hits = len(up.hits)
     models = up.models
-    failover_logged = any("failover" in str(x) for x in logs)
+    failover_logged = any(("failover" in str(x)) or ("transport-retry" in str(x)) for x in logs)
     ok = (got == expect_client and hits == expect_hits)
     if ok and expect_client == 200:
         # 第一次必须是被钉住的 a9，第二次必须是换号后的其他账号
@@ -225,6 +235,8 @@ def main():
                  hang_accounts=set(), expect_client=429, expect_hits=3),
         run_case("C 等头超时(@a9) → 换号后200", quota_accounts=set(), hang_accounts={9},
                  expect_client=200, expect_hits=2, header_timeout=1),
+        run_case("D 连接重置(@a9) → 退避换号后200", quota_accounts=set(), hang_accounts=set(),
+                 reset_accounts={9}, reset_hits=1, expect_client=200, expect_hits=2),
     ]
     shutil.rmtree(home, ignore_errors=True)
     print("RESULT:", "ALL PASS" if all(results) else "FAILED")
@@ -233,3 +245,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
