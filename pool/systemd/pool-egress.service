@@ -1,0 +1,15 @@
+[Unit]
+Description=pool muse egress (sing-box, loopback only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/sing-box run -c /opt/pool-egress/config.json
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,180 @@
+# DSH 侧插件：号池会话钉号（树键注入 · 零宽编码 v2）
+#
+# 它做且只做一件事：在每个进入模型的消息序列末尾，附加一个稳定的会话树键标记。
+# v2 起标记是**零宽字符载荷**（U+200B/U+200C/U+200D/U+2060）——界面上完全看不见，
+# 但原样存在于出站请求体字节里；号池 sidecar 按字节解码后把整棵树钉到同一个账号。
+# 编码规格与取证见同目录 README.md「编码规格」一节。
+#
+# v2.1.0（2026-10-20）：同一插件同时承载**号池 provider 路由**（见文件末尾 override），
+# 含 T0 配置（streamIdleTimeoutMs=MAX_TIMER_DELAY_MS、maxRetries/backoff），
+# 目的是「只装一个插件」即可完成号池接入 + 会话钉号。
+#
+# v2.1.2（2026-10-21）：DeepSeek 思考模式协议兼容 + reasoningEfforts 全模式对齐。
+# 背景：本插件的 `litellm-completions` 是**自定义 provider**（id 不是 `deepseek`，
+# baseURL 也不含 deepseek.com），pi-ai 的自动检测因此不会打开 DeepSeek 专属兼容项：
+#   - 回放历史时不会给缺少 reasoning 的 assistant 消息补 `reasoning_content`；
+#   - thinking 参数按通用 OpenAI 口径发送，而不是 DeepSeek 的 `thinking:{type:enabled}`。
+# 结果：会话里一旦出现“只有 tool_call、没有 reasoning”的 assistant 消息，下一次续写
+# 就被上游 400：`The reasoning_content in the thinking mode must be passed back to the API`。
+# 修复：按 pi-ai 官方 deepseek / opencode-go 目录，为每个模型显式声明 compat 与
+# reasoningEfforts（未声明的档位会被 DSH 钉成 unsupported，这正是我们要的语义）。
+#
+# v2.1.3（2026-10-21）：v2.1.2 把 `thinkingFormat` 设成 `deepseek` 是错的——号池
+# `litellm-completions` 的上游是 OpenAI 兼容网关，`deepseek` 格式会发顶层
+# `thinking:{type:enabled}`（DeepSeek 原生 API 参数），litellm 按 openai provider 校验后
+# 直接 400：`UnsupportedParamsError: openai does not support parameters: ['thinking']`。
+# 现改为 `thinkingFormat: openai`（只发 `reasoning_effort`）。两类兼容项职责分离：
+#   - `requiresReasoningContentOnAssistantMessages`：回放历史时补 `reasoning_content`
+#     （修 “must be passed back” 400）；
+#   - `thinkingFormat`：决定 thinking 参数怎么发；OpenAI 兼容网关 → `openai`。
+#
+# 为什么用消息层而不是请求头：DSH 插件 API 没有注入 HTTP 请求头的接缝
+#   - agent/request  只能改 LlmCallConfig = { provider, model, reasoningEffort?, temperature?, maxTokens?, stop? }
+#   - llm/stream     只能观察/包裹 StreamChunk 流，GenerateOptions 同样无 headers/metadata
+#   - agent/pre-step 是唯一能“替换进入该步的消息”的接缝（官方 practices.md 指明）
+- insert:
+    - id: dsh-pool-affinity
+      name: '@local/dsh-pool-affinity'
+      config:
+        enabled: true
+        # 仅用于识别/升级 v1 写下的旧可见字面量 [pool-tree: …]；零宽载荷本身与它无关
+        markerKey: pool-tree
+        maxHops: 8
+
+# 2026-10-20 v2.1.1：号池 provider 路由**覆盖** base 的 `llm-pi-ai` 行（id-targeted，config 整体替换）。
+# 不再 insert 第二个同包实例：实测多实例在运行时注册失败（fiberPhase=failed），
+# 结果是号池路由整批缺失。覆盖单实例没有这个问题。
+# 若 profile 同时也定义了 `llm-pi-ai` 行，profile 层优先级更高会盖掉这里 —— 本机部署时
+# 两边内容必须保持一致（dsh-config/validate_pi_ai_providers.py 可离线校验）。
+- id: llm-pi-ai
+  name: '@deepseek-ai/dsh-llm-pi-ai'
+  config:
+    providers:
+      litellm-reaspons:
+        displayName: litellm-reaspons
+        # 2026-10-21：改用通用 LITELLM_API_KEY。原来的 LITELLM_REASPONS_API_KEY
+        # 在多数机器上不存在（凭据库只有 LITELLM_API_KEY），装完插件还要再配一次
+        # 凭据才能用，违背“装好即用”。分协议独立密钥的部署可在 profile 里覆盖 apiKeyEnv。
+        apiKeyEnv: LITELLM_API_KEY
+        api: openai-responses
+        baseURL: https://yesifu.site/works/pool/v1
+        streamIdleTimeoutMs: 2147483647
+        retryPolicy:
+          mode: normal
+          maxRetries: 2
+          backoff:
+            initialDelayMs: 800
+            maxDelayMs: 15000
+            jitterRatio: 0.2
+        models:
+          - id: muse-spark-1.3-contributor
+            name: Muse Spark 1.3 Contributor
+            # 元数据取自 opencode 官方目录（DSH 内置 opencode-go.json 是它的镜像）：
+            # contextWindow 1048576 / maxOutput 131072（旧值 858860/130000 是估的）。
+            contextWindow: 1048576
+            maxTokens: 131072
+            input:
+              - text
+              - image
+            # 2026-10-21（v2.1.5）：加回六个档位。前提已在网关侧补齐 ——
+            # 号池 reconciler 会给每个 deployment 登记 model_info.supports_reasoning: true
+            # （旧版漏登记时，LiteLLM 按“cost map 不认识 = 不支持推理”直接 400
+            #  UnsupportedParamsError；已用 PATCH /model/{id}/update 修好并线上验证 200）。
+            # `off` 映射 null = 默认不发该参数；`max` 不给（官方目录里 muse 的 max 是 null）。
+            reasoningEfforts:
+              "off": null
+              minimal: minimal
+              low: low
+              medium: medium
+              high: high
+              xhigh: xhigh
+      litellm-completions:
+        displayName: litellm-completions
+        # 同 litellm-reaspons：默认用通用 LITELLM_API_KEY
+        apiKeyEnv: LITELLM_API_KEY
+        api: openai-completions
+        baseURL: https://yesifu.site/works/pool/v1
+        streamIdleTimeoutMs: 2147483647
+        retryPolicy:
+          mode: normal
+          maxRetries: 2
+          backoff:
+            initialDelayMs: 800
+            maxDelayMs: 15000
+            jitterRatio: 0.2
+        models:
+          - id: deepseek-v4.1-flash
+            name: DeepSeek V4.1 Flash
+            contextWindow: 1000000
+            maxTokens: 384000
+            input:
+              - text
+              - image
+            # 上游 zen catalog（deepseek-v4.1-flash）：off/low/high/max 支持，
+            # minimal/medium/xhigh 不支持（未声明 = DSH 钉成 unsupported）
+            reasoningEfforts:
+              "off": null
+              low: low
+              high: high
+              max: max
+            # 关键兼容项（v2.1.3 修正）：
+            # - requiresReasoningContentOnAssistantMessages：回放历史补 reasoning_content，
+            #   修 “must be passed back” 400（这才是真正修 bug 的开关）；
+            # - thinkingFormat：必须是 openai（号池 litellm 上游是 OpenAI 兼容 provider，
+            #   不能用 deepseek 格式，否则会发 `thinking` 参数被 litellm 直接 400 拒绝）。
+            compat:
+              supportsStore: false
+              supportsDeveloperRole: false
+              supportsStrictMode: true
+              maxTokensField: max_tokens
+              thinkingFormat: openai
+              requiresReasoningContentOnAssistantMessages: true
+          - id: mimo-v2.6-flash
+            name: MiMo-V2.6-Flash
+            contextWindow: 1048576
+            maxTokens: 131072
+            input:
+              - text
+              - image
+            # 上游 zen catalog 未声明 thinkingLevelMap → 默认支持 off/minimal/low/medium/high
+            reasoningEfforts:
+              "off": null
+              minimal: minimal
+              low: low
+              medium: medium
+              high: high
+            compat:
+              supportsStore: false
+              supportsDeveloperRole: false
+              supportsStrictMode: true
+              maxTokensField: max_tokens
+          - id: mimo-v2.6-pro
+            name: MiMo-V2.6-Pro
+            contextWindow: 1048576
+            maxTokens: 131072
+            input:
+              - text
+              - image
+            # 同 mimo-v2.6-flash
+            reasoningEfforts:
+              "off": null
+              minimal: minimal
+              low: low
+              medium: medium
+              high: high
+            compat:
+              supportsStore: false
+              supportsDeveloperRole: false
+              supportsStrictMode: true
+              maxTokensField: max_tokens
+      opencode-go:
+        apiKeyEnv: OPENCODE_GO_API_KEY
+        models:
+          # provider 目录（opencode-go）自带 thinkingLevelMap/compat，故不再重复声明
+          - id: deepseek-v4.1-flash
+            name: DeepSeek V4.1 Flash
+            contextWindow: 1000000
+            maxTokens: 384000
+            input:
+              - text
+              - image

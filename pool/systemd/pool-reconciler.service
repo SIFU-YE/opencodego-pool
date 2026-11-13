@@ -1,0 +1,52 @@
+# OpencodeLitellmPool 热更新应用器（旧版 unit）
+#
+# ⚠️ 独立部署请用 deploy/systemd/opencodelitelm-pool-reconciler.service（干净版，由
+#    deploy/bootstrap.sh 安装，变量来自 /etc/opencodelitelm-pool.env）。本文件保留为旧机兼容。
+#
+# 目标：改 pool-config.json / .env 后**不重启 litellm**即可生效。
+# 为什么不能靠 restart（设计根因）：LiteLLM 跑在 docker 容器里，容器环境变量在
+# create/run 时固化，docker restart 不会重新读取 --env-file；而重建容器会清空
+# LiteLLM 内存里的 session affinity 钉号与前缀缓存。因此由本服务调用 LiteLLM
+# 管理 API（/model/info、/model/new、/model/update、/model/delete）热应用
+# deployment 增删改，全程不重启容器。
+#
+# 安装（路径按部署实际改；POOL_HOME 写入 /etc/opencodelitelm-pool.env）：
+#   install -m 0644 pool-reconciler.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now pool-reconciler
+# 上线前先探测热路径能力：
+#   python3 ${POOL_HOME}/pool_reconciler.py --check     # 0=热路径可用，非 0=不可用（会打印降级命令）
+#
+# 两种运行模式（二选一，不要同时启用）：
+#   1) --watch 常驻（本文件默认）：每 --interval 秒一轮（默认 60s，POOL_RECONCILE_INTERVAL 可调）；
+#      stdout 每轮输出一行 JSON，stderr 是诊断信息，统一进 journald。
+#   2) --once 单次（适合 cron / systemd timer；看板应用配置后也会 subprocess 调 --once）：
+#        cron 方案：* * * * * /usr/bin/python3 ${POOL_HOME}/pool_reconciler.py --once
+#        timer 方案：本 unit 改 Type=oneshot、ExecStart=... --once，
+#                   另存 pool-reconciler.timer（OnUnitActiveSec=60s, WantedBy=timers.target）。
+#
+# 并发安全：单轮内持有 ${POOL_HOME}/.pool-reconciler.lock 文件锁；cron/timer/看板同时
+# 触发时后到者打印 skipped=locked 后退出 0，不会写坏状态；失败重试有上限（指数退避）。
+
+[Unit]
+Description=OpencodeLitellmPool config reconciler (hot-apply pool-config.json via LiteLLM admin API, legacy unit)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/pool_reconciler.py --watch --interval ${POOL_RECONCILE_INTERVAL}
+# 管理 API 地址默认 127.0.0.1:4000；LiteLLM 不在本机/端口不同时在这里覆盖：
+# Environment=POOL_LITELLM_URL=http://127.0.0.1:4000
+Restart=always
+RestartSec=5
+Nice=5
+NoNewPrivileges=true
+# stdout=结构化 JSON（给看板解析），stderr=诊断；统一进 journald
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

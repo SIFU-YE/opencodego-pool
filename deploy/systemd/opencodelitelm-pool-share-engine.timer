@@ -1,0 +1,17 @@
+# OpencodeLitellmPool · 份额引擎定时器（可选，默认不启用）
+#   deploy/bootstrap.sh 只安装、不 enable；启用：
+#     sudo systemctl enable --now opencodelitelm-pool-share-engine.timer
+#   间隔默认 600s；如需修改：systemctl edit 或改 SHARE_ENGINE_INTERVAL（本 timer 用固定值）。
+
+[Unit]
+Description=OpencodeLitellmPool share-engine timer (optional)
+Documentation=file://${POOL_HOME}/deploy/README.md
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+AccuracySec=30s
+Unit=opencodelitelm-pool-share-engine.service
+
+[Install]
+WantedBy=timers.target

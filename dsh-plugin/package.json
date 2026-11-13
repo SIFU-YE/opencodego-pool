@@ -1,0 +1,28 @@
+{
+  "name": "@local/dsh-pool-affinity",
+  "version": "2.1.5",
+  "private": true,
+  "type": "module",
+  "description": "Pool companion plugin: injects the invisible zero-width session-tree key for account pinning, and ships the pool provider routes (pi-ai adapter, idle-timeout/retry policy, DeepSeek thinking-mode compat + reasoningEfforts) so one plugin covers both.",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "README.md",
+    "locale/*.json",
+    "CHANGELOG.md"
+  ],
+  "meta": {
+    "title": "号池接入（会话钉号 + provider 路由）",
+    "description": "一个插件搞定号池接入：零宽树键注入（按会话树钉账号）+ 号池 provider 路由（含看门狗上限与重试/退避）。"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

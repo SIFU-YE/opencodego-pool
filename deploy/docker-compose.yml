@@ -1,0 +1,56 @@
+# OpencodeLitellmPool · 数据面容器（LiteLLM）
+#
+# 用法（一般由 deploy/bootstrap.sh 调用；也可手工）：
+#   cd deploy && docker compose up -d
+#
+# 重要：
+#  1. 容器 env 全部来自 ${POOL_HOME}/.env（compose `env_file`）。
+#     **`docker restart litellm` 不会重读 env-file** —— env 在容器 create 时固化；
+#     改 .env 后必须 `docker compose up -d`（compose 检测到 env_file 变化会重建容器）。
+#  2. 运行期改账号密钥 / 模型 allowlist 请走看板「管理控制台」页签：新版由 pool_reconciler
+#     通过管理 API 热应用，不需要重建或重启容器。本 compose 只负责容器生命周期。
+#  3. bind mount 的都是 ${POOL_HOME} 下的文件；bootstrap.sh 会先准备好再起容器。
+#  4. 端口只绑 127.0.0.1；对外访问请自行加 VPN / 反代（见 nginx-pool-location.conf）。
+
+name: opencodelitelm-pool
+
+services:
+  litellm:
+    image: ${LITELLM_IMAGE:-ghcr.io/berriai/litellm:main-stable}
+    # 容器名固定为 litellm：dashboard / gen_config / 运维工具均按此名执行 docker exec/restart
+    container_name: litellm
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    restart: unless-stopped
+    # 让流式长请求在重建/停止时有一点收尾时间
+    stop_grace_period: 60s
+    init: true
+    env_file:
+      - ${POOL_HOME:-/opt/litellm}/.env
+    ports:
+      - "127.0.0.1:${LITELLM_PORT:-4000}:4000"
+    volumes:
+      # LiteLLM 配置（由 gen_config.py / reconciler 生成，容器只读）
+      - ${POOL_HOME:-/opt/litellm}/config.yaml:/app/config.yaml:ro
+      # 自定义回调：逐请求记录账号/token（必须与 config.yaml 的 callbacks: 一致）
+      - ${POOL_HOME:-/opt/litellm}/pool_logger.py:/app/pool_logger.py:ro
+      # 回调落盘 = 看板 / 运维工具读取的同一份请求日志（文件需在容器启动前存在）
+      - ${POOL_HOME:-/opt/litellm}/pool-requests.jsonl:/app/pool-requests.jsonl
+    # 出网代理（可选）：.env 里配 HTTPS_PROXY=http://docker-host:<port> 时可用；
+    # docker-host 这个别名由下面的 extra_hosts 映射到宿主网关（host-gateway）。
+    extra_hosts:
+      - "docker-host:host-gateway"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:4000/health/liveliness\", timeout=3)'"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

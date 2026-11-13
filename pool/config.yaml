@@ -1,0 +1,1462 @@
+# 由 gen_config.py 自动生成，请勿手改；增删账号/模型后重跑: python3 /opt/litellm/gen_config.py
+# 2026-09-26 起：Go 订阅限额 rate-limited 的账号自动剔除（当前剔除: OCG_KEY_1, OCG_KEY_3)
+# 2026-10-16 起：上游 https://opencode.ai/inference/go/openai/v1；UA=dsh-opencodego-pool/1.0；别名 <model>@a<N>s<K>，K=1..8（会话级 x-opencode-session）
+model_list:
+  - model_name: deepseek-v4.1-flash
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2
+  - model_name: deepseek-v4.1-flash
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4
+  - model_name: deepseek-v4.1-flash
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5
+  - model_name: deepseek-v4.1-flash
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6
+  - model_name: muse-spark-1.3-contributor
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2
+  - model_name: muse-spark-1.3-contributor
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4
+  - model_name: muse-spark-1.3-contributor
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5
+  - model_name: muse-spark-1.3-contributor
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6
+  - model_name: claude-haiku-5-5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2
+  - model_name: claude-haiku-5-5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4
+  - model_name: claude-haiku-5-5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5
+  - model_name: claude-haiku-5-5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6
+  - model_name: mimo-v2.6-flash
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2
+  - model_name: mimo-v2.6-flash
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4
+  - model_name: mimo-v2.6-flash
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5
+  - model_name: mimo-v2.6-flash
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6
+  - model_name: mimo-v2.6-pro
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2
+  - model_name: mimo-v2.6-pro
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4
+  - model_name: mimo-v2.6-pro
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5
+  - model_name: mimo-v2.6-pro
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6
+  - model_name: deepseek-v4.1-flash@a2s1
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s1
+  - model_name: deepseek-v4.1-flash@a2s2
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s2
+  - model_name: deepseek-v4.1-flash@a2s3
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s3
+  - model_name: deepseek-v4.1-flash@a2s4
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s4
+  - model_name: deepseek-v4.1-flash@a2s5
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s5
+  - model_name: deepseek-v4.1-flash@a2s6
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s6
+  - model_name: deepseek-v4.1-flash@a2s7
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s7
+  - model_name: deepseek-v4.1-flash@a2s8
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s8
+  - model_name: deepseek-v4.1-flash@a4s1
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s1
+  - model_name: deepseek-v4.1-flash@a4s2
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s2
+  - model_name: deepseek-v4.1-flash@a4s3
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s3
+  - model_name: deepseek-v4.1-flash@a4s4
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s4
+  - model_name: deepseek-v4.1-flash@a4s5
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s5
+  - model_name: deepseek-v4.1-flash@a4s6
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s6
+  - model_name: deepseek-v4.1-flash@a4s7
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s7
+  - model_name: deepseek-v4.1-flash@a4s8
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s8
+  - model_name: deepseek-v4.1-flash@a5s1
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s1
+  - model_name: deepseek-v4.1-flash@a5s2
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s2
+  - model_name: deepseek-v4.1-flash@a5s3
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s3
+  - model_name: deepseek-v4.1-flash@a5s4
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s4
+  - model_name: deepseek-v4.1-flash@a5s5
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s5
+  - model_name: deepseek-v4.1-flash@a5s6
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s6
+  - model_name: deepseek-v4.1-flash@a5s7
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s7
+  - model_name: deepseek-v4.1-flash@a5s8
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s8
+  - model_name: deepseek-v4.1-flash@a6s1
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s1
+  - model_name: deepseek-v4.1-flash@a6s2
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s2
+  - model_name: deepseek-v4.1-flash@a6s3
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s3
+  - model_name: deepseek-v4.1-flash@a6s4
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s4
+  - model_name: deepseek-v4.1-flash@a6s5
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s5
+  - model_name: deepseek-v4.1-flash@a6s6
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s6
+  - model_name: deepseek-v4.1-flash@a6s7
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s7
+  - model_name: deepseek-v4.1-flash@a6s8
+    litellm_params:
+      model: openai/deepseek-v4.1-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s8
+  - model_name: muse-spark-1.3-contributor@a2s1
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s1
+  - model_name: muse-spark-1.3-contributor@a2s2
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s2
+  - model_name: muse-spark-1.3-contributor@a2s3
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s3
+  - model_name: muse-spark-1.3-contributor@a2s4
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s4
+  - model_name: muse-spark-1.3-contributor@a2s5
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s5
+  - model_name: muse-spark-1.3-contributor@a2s6
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s6
+  - model_name: muse-spark-1.3-contributor@a2s7
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s7
+  - model_name: muse-spark-1.3-contributor@a2s8
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s8
+  - model_name: muse-spark-1.3-contributor@a4s1
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s1
+  - model_name: muse-spark-1.3-contributor@a4s2
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s2
+  - model_name: muse-spark-1.3-contributor@a4s3
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s3
+  - model_name: muse-spark-1.3-contributor@a4s4
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s4
+  - model_name: muse-spark-1.3-contributor@a4s5
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s5
+  - model_name: muse-spark-1.3-contributor@a4s6
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s6
+  - model_name: muse-spark-1.3-contributor@a4s7
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s7
+  - model_name: muse-spark-1.3-contributor@a4s8
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s8
+  - model_name: muse-spark-1.3-contributor@a5s1
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s1
+  - model_name: muse-spark-1.3-contributor@a5s2
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s2
+  - model_name: muse-spark-1.3-contributor@a5s3
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s3
+  - model_name: muse-spark-1.3-contributor@a5s4
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s4
+  - model_name: muse-spark-1.3-contributor@a5s5
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s5
+  - model_name: muse-spark-1.3-contributor@a5s6
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s6
+  - model_name: muse-spark-1.3-contributor@a5s7
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s7
+  - model_name: muse-spark-1.3-contributor@a5s8
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s8
+  - model_name: muse-spark-1.3-contributor@a6s1
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s1
+  - model_name: muse-spark-1.3-contributor@a6s2
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s2
+  - model_name: muse-spark-1.3-contributor@a6s3
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s3
+  - model_name: muse-spark-1.3-contributor@a6s4
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s4
+  - model_name: muse-spark-1.3-contributor@a6s5
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s5
+  - model_name: muse-spark-1.3-contributor@a6s6
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s6
+  - model_name: muse-spark-1.3-contributor@a6s7
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s7
+  - model_name: muse-spark-1.3-contributor@a6s8
+    litellm_params:
+      model: openai/muse-spark-1.3-contributor
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s8
+  - model_name: claude-haiku-5-5@a2s1
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s1
+  - model_name: claude-haiku-5-5@a2s2
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s2
+  - model_name: claude-haiku-5-5@a2s3
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s3
+  - model_name: claude-haiku-5-5@a2s4
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s4
+  - model_name: claude-haiku-5-5@a2s5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s5
+  - model_name: claude-haiku-5-5@a2s6
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s6
+  - model_name: claude-haiku-5-5@a2s7
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s7
+  - model_name: claude-haiku-5-5@a2s8
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s8
+  - model_name: claude-haiku-5-5@a4s1
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s1
+  - model_name: claude-haiku-5-5@a4s2
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s2
+  - model_name: claude-haiku-5-5@a4s3
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s3
+  - model_name: claude-haiku-5-5@a4s4
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s4
+  - model_name: claude-haiku-5-5@a4s5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s5
+  - model_name: claude-haiku-5-5@a4s6
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s6
+  - model_name: claude-haiku-5-5@a4s7
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s7
+  - model_name: claude-haiku-5-5@a4s8
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s8
+  - model_name: claude-haiku-5-5@a5s1
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s1
+  - model_name: claude-haiku-5-5@a5s2
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s2
+  - model_name: claude-haiku-5-5@a5s3
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s3
+  - model_name: claude-haiku-5-5@a5s4
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s4
+  - model_name: claude-haiku-5-5@a5s5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s5
+  - model_name: claude-haiku-5-5@a5s6
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s6
+  - model_name: claude-haiku-5-5@a5s7
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s7
+  - model_name: claude-haiku-5-5@a5s8
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s8
+  - model_name: claude-haiku-5-5@a6s1
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s1
+  - model_name: claude-haiku-5-5@a6s2
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s2
+  - model_name: claude-haiku-5-5@a6s3
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s3
+  - model_name: claude-haiku-5-5@a6s4
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s4
+  - model_name: claude-haiku-5-5@a6s5
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s5
+  - model_name: claude-haiku-5-5@a6s6
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s6
+  - model_name: claude-haiku-5-5@a6s7
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s7
+  - model_name: claude-haiku-5-5@a6s8
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_base: https://opencode.ai/inference/go/anthropic
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s8
+  - model_name: mimo-v2.6-flash@a2s1
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s1
+  - model_name: mimo-v2.6-flash@a2s2
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s2
+  - model_name: mimo-v2.6-flash@a2s3
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s3
+  - model_name: mimo-v2.6-flash@a2s4
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s4
+  - model_name: mimo-v2.6-flash@a2s5
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s5
+  - model_name: mimo-v2.6-flash@a2s6
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s6
+  - model_name: mimo-v2.6-flash@a2s7
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s7
+  - model_name: mimo-v2.6-flash@a2s8
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s8
+  - model_name: mimo-v2.6-flash@a4s1
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s1
+  - model_name: mimo-v2.6-flash@a4s2
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s2
+  - model_name: mimo-v2.6-flash@a4s3
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s3
+  - model_name: mimo-v2.6-flash@a4s4
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s4
+  - model_name: mimo-v2.6-flash@a4s5
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s5
+  - model_name: mimo-v2.6-flash@a4s6
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s6
+  - model_name: mimo-v2.6-flash@a4s7
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s7
+  - model_name: mimo-v2.6-flash@a4s8
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s8
+  - model_name: mimo-v2.6-flash@a5s1
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s1
+  - model_name: mimo-v2.6-flash@a5s2
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s2
+  - model_name: mimo-v2.6-flash@a5s3
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s3
+  - model_name: mimo-v2.6-flash@a5s4
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s4
+  - model_name: mimo-v2.6-flash@a5s5
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s5
+  - model_name: mimo-v2.6-flash@a5s6
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s6
+  - model_name: mimo-v2.6-flash@a5s7
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s7
+  - model_name: mimo-v2.6-flash@a5s8
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s8
+  - model_name: mimo-v2.6-flash@a6s1
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s1
+  - model_name: mimo-v2.6-flash@a6s2
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s2
+  - model_name: mimo-v2.6-flash@a6s3
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s3
+  - model_name: mimo-v2.6-flash@a6s4
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s4
+  - model_name: mimo-v2.6-flash@a6s5
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s5
+  - model_name: mimo-v2.6-flash@a6s6
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s6
+  - model_name: mimo-v2.6-flash@a6s7
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s7
+  - model_name: mimo-v2.6-flash@a6s8
+    litellm_params:
+      model: openai/mimo-v2.6-flash
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s8
+  - model_name: mimo-v2.6-pro@a2s1
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s1
+  - model_name: mimo-v2.6-pro@a2s2
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s2
+  - model_name: mimo-v2.6-pro@a2s3
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s3
+  - model_name: mimo-v2.6-pro@a2s4
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s4
+  - model_name: mimo-v2.6-pro@a2s5
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s5
+  - model_name: mimo-v2.6-pro@a2s6
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s6
+  - model_name: mimo-v2.6-pro@a2s7
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s7
+  - model_name: mimo-v2.6-pro@a2s8
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_2
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-2-s8
+  - model_name: mimo-v2.6-pro@a4s1
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s1
+  - model_name: mimo-v2.6-pro@a4s2
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s2
+  - model_name: mimo-v2.6-pro@a4s3
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s3
+  - model_name: mimo-v2.6-pro@a4s4
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s4
+  - model_name: mimo-v2.6-pro@a4s5
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s5
+  - model_name: mimo-v2.6-pro@a4s6
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s6
+  - model_name: mimo-v2.6-pro@a4s7
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s7
+  - model_name: mimo-v2.6-pro@a4s8
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_4
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-4-s8
+  - model_name: mimo-v2.6-pro@a5s1
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s1
+  - model_name: mimo-v2.6-pro@a5s2
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s2
+  - model_name: mimo-v2.6-pro@a5s3
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s3
+  - model_name: mimo-v2.6-pro@a5s4
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s4
+  - model_name: mimo-v2.6-pro@a5s5
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s5
+  - model_name: mimo-v2.6-pro@a5s6
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s6
+  - model_name: mimo-v2.6-pro@a5s7
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s7
+  - model_name: mimo-v2.6-pro@a5s8
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_5
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-5-s8
+  - model_name: mimo-v2.6-pro@a6s1
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s1
+  - model_name: mimo-v2.6-pro@a6s2
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s2
+  - model_name: mimo-v2.6-pro@a6s3
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s3
+  - model_name: mimo-v2.6-pro@a6s4
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s4
+  - model_name: mimo-v2.6-pro@a6s5
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s5
+  - model_name: mimo-v2.6-pro@a6s6
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s6
+  - model_name: mimo-v2.6-pro@a6s7
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s7
+  - model_name: mimo-v2.6-pro@a6s8
+    litellm_params:
+      model: openai/mimo-v2.6-pro
+      api_base: https://opencode.ai/inference/go/openai/v1
+      api_key: os.environ/OCG_KEY_6
+      extra_headers:
+        user-agent: dsh-opencodego-pool/1.0
+        x-opencode-session: dsh-acct-6-s8
+
+litellm_settings:
+  request_timeout: 3600
+  disable_aiohttp_transport: true
+  callbacks: pool_logger.pool_logger
+
+router_settings:
+  routing_strategy: least-busy
+  deployment_affinity_ttl_seconds: 2592000
+  model_group_affinity_config:
+    deepseek-v4.1-flash: [session_affinity]
+    muse-spark-1.3-contributor: [session_affinity, encrypted_content_affinity]
+    claude-haiku-5-5: [session_affinity, encrypted_content_affinity]
+    mimo-v2.6-flash: [session_affinity]
+    mimo-v2.6-pro: [session_affinity]
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

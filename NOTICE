@@ -1,0 +1,7 @@
+opencodego 号池（OpenCode Go Pool）
+Copyright 2026 sifu-ye
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+It includes no third-party source code vendored into this repository; runtime
+dependencies (LiteLLM, nginx, sing-box, Python stdlib) are installed separately
+and remain under their own licenses.

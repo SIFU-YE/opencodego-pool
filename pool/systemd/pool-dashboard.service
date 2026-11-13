@@ -1,0 +1,24 @@
+# ⚠️ 旧版 unit（历史部署沿用）：独立部署请用 deploy/systemd/opencodelitelm-pool-dashboard.service
+#    本文件是 P3 观测面独立实例（127.0.0.1:8088），保留为旧机兼容；路径改用 ${POOL_HOME}。
+#
+# 安装（旧机）：
+#   install -m 644 pool/systemd/pool-dashboard.service /etc/systemd/system/
+#   /etc/opencodelitelm-pool.env 写入 POOL_HOME=/opt/litellm
+#   systemctl daemon-reload && systemctl enable --now pool-dashboard
+
+[Unit]
+Description=OpenCode Go pool dashboard (P3 observability instance, 127.0.0.1:8088, legacy unit)
+After=network.target docker.service
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/dashboard.py --listen 127.0.0.1:8088
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
