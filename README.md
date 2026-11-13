@@ -181,6 +181,8 @@ python3 pool/tools/test_pool_control.py           # 热更新控制面
 
 ```bash
 python3 pool/tools/test_sidecar_units.py              # sidecar 单测（真实模块，含「messages 字节不动」硬约束）
+python3 pool/tools/test_sidecar_admission_retry.py    # 容量准入 429（ttft/prefill/overloaded）有界等待重试
+python3 pool/tools/test_sidecar_quota_failover.py     # 配额 429/等头超时 → 当次换号（2026-11-13）
 python3 pool/tools/test_session_buckets.py            # 会话桶：确定性/分散/降级链
 python3 pool/tools/test_sidecar_stream_termination.py # 流式三件套：终结块 / 静默心跳 / 中途断开不挂死
 python3 pool/tools/test_upstream_policy.py            # 通道策略：放行 Go、拒绝 Zen/Console

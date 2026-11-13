@@ -63,11 +63,23 @@ messages 字节绝不改动，仅动 metadata。解析失败 → 原样透传（
   上游建议等待后重试；DSH retryPolicy backoff 初始 0.8s、上限 15s，3 次尝试都在饱和窗口内 →
   用户侧「重试延迟 1.7s → 整轮失败」。现 sidecar 命中该签名时按建议等待（上限 20s、默认 5s，
   可用 POOL_ADMISSION_429_MAX_WAIT_S / POOL_ADMISSION_429_DEFAULT_WAIT_S 调整）后原体重发，
-  最多 2 次（POOL_ADMISSION_429_MAX_RETRIES）；配额类 429 不受影响。日志：
+  最多 2 次（POOL_ADMISSION_429_MAX_RETRIES）；配额类 429 见下方 2026-11-13 换号逻辑。日志：
   `upstream-admission-429 retry-1/2 wait=16s ...` / `... retry-failed ...`。
 2026-11-06 prefill_cap_refused / overloaded：上游容量准入的另外两种签名（实测 prefill after 5s
   与 after 30s；overloaded 无建议秒数），与 ttft_ 共用同一有界等待重试；等待上限默认 30s；
   三种签名都不换账号，仍由后续控制面 hard 淘汰决定是否重钉。
+2026-11-13 配额 429 / 等头超时当次换号（生产 11:04–11:06 实锤）：
+  账号 8 monthly 限额后，会话仍钉在 `<model>@a8s4` 单 deployment 别名上；账号 9（额度剩 2%）
+  的会话 `@a9s2` 等头超时 3 次 → 客户端固定 502 `session-sidecar upstream error`。
+  别名 model group 只有一个账号，LiteLLM 无法在同名组内换号，必须在 sidecar 层：
+    · 配额 429（`usage limit reached` / `usage limit exceeded` / `Extra Usage` / `Go Plus` /
+      `insufficient_quota`）→ `hard repin` 到另一个 healthy 账号的别名后重发，
+      最多 POOL_QUOTA_FAILOVER_ATTEMPTS 次（默认 2）；
+    · 等头重试耗尽 → 同样换一次别名重发（POOL_HEADER_FAILOVER_ATTEMPTS，默认 1），
+      全失败才 502；
+    · 换号同时更新树钉号，后续请求不再回退到限额号；仅在尚未向客户端写字节时触发。
+  日志：`upstream-quota-429 failover-1/2 from=OCG_KEY_9 to=OCG_KEY_3` /
+  `upstream-header-failover 1/1 ...`。
 2026-10-31 软淘汰迁移（额度到 ε 线）与连续性保护：
   share-engine 在 used≥98%（ε=2%）时把 pace/share 归零；旧逻辑会让 sticky 立即失效，
   已钉住的会话下一条请求就被硬切到别的账号 → 上游 prefix cache 全冷，且 thinking 的
@@ -169,6 +181,19 @@ ADMISSION_429_MARK = ADMISSION_429_MARKS[0]   # 兼容旧引用
 ADMISSION_429_MAX_RETRIES = int(os.environ.get("POOL_ADMISSION_429_MAX_RETRIES") or 2)
 ADMISSION_429_MAX_WAIT_S = float(os.environ.get("POOL_ADMISSION_429_MAX_WAIT_S") or 30.0)
 ADMISSION_429_DEFAULT_WAIT_S = float(os.environ.get("POOL_ADMISSION_429_DEFAULT_WAIT_S") or 5.0)
+
+# 2026-11-13：配额 429 / 等头超时后的「当次换号」。
+# 背景（生产 11:04–11:06 实锤）：账号 8 触发 monthly 限额后，会话仍被钉在
+# `<model>@a8s4` 这个单 deployment 别名上；sidecar 只对容量准入 429 做原体重发，
+# 配额 429 原样透传；随后账号 9 的会话 `@a9s2` 等头超时 3 次 → 固定 502
+# `session-sidecar upstream error`。别名组里只有一个账号，LiteLLM 无法在同名
+# 模型组内换号，必须在 sidecar 层主动改写成另一个健康账号的别名后重发。
+# 仅当**尚未向客户端写出任何字节**时触发；换号预算默认 2 次（配额 429）+ 1 次（等头超时），
+# 换号后仍失败则维持原有 429/502 行为。
+QUOTA_429_MARKS = (b"usage limit reached", b"usage limit exceeded",
+                   b"Extra Usage", b"Go Plus", b"insufficient_quota")
+QUOTA_FAILOVER_ATTEMPTS = max(0, int(os.environ.get("POOL_QUOTA_FAILOVER_ATTEMPTS") or 2))
+HEADER_FAILOVER_ATTEMPTS = max(0, int(os.environ.get("POOL_HEADER_FAILOVER_ATTEMPTS") or 1))
 
 
 def _admission_retry_after_s(body):
@@ -1048,6 +1073,96 @@ def resolve_pin(tree, model):
     """向后兼容包装：返回 (key, alias, sticky)（repin 原因见 resolve_pin_ex）。"""
     return resolve_pin_ex(tree, model)[:3]
 
+
+def _alias_key_of_body(send_body):
+    """从已被改写的请求体 model（<model>@aN[sK]）里取当前账号 key_ref；取不到返回 None。"""
+    try:
+        m = re.search(r"@a([0-9]+)", _model_of_body(send_body) or "")
+        return ("OCG_KEY_%s" % m.group(1)) if m else None
+    except Exception:
+        return None
+
+
+def _failover_pin(tree, model, excluded):
+    """选一个可换号的目标账号 + 别名；优先 healthy 份额集合，尽量避开 low/hard 状态。
+
+    返回 (key_ref, alias) 或 (None, None)。仅用于「当前账号已限额/不可用」的故障路径，
+    不改变新会话的正常加权选号。
+    """
+    try:
+        st = affinity_state()
+        excluded = set(excluded or ())
+        try:
+            disabled = disabled_slots() or set()
+        except Exception:
+            disabled = set()
+
+        def ok_slot(key):
+            slot = _key_slot(key)
+            return slot is None or slot not in disabled
+
+        ordered = []
+        for key, weight in (st.get("accounts") or []):
+            if key in excluded or not ok_slot(key):
+                continue
+            ordered.append((key, float(weight) if isinstance(weight, (int, float)) else 1.0))
+        # healthy 集合为空时，退而求其次：states 里非 hard / 非 low 的账号
+        if not ordered:
+            for key, info in (st.get("states") or {}).items():
+                if key in excluded or not ok_slot(key) or info.get("hard") or info.get("low"):
+                    continue
+                ordered.append((key, 1.0))
+        if not ordered:
+            for key, info in (st.get("states") or {}).items():
+                if key in excluded or not ok_slot(key) or info.get("hard"):
+                    continue
+                ordered.append((key, 1.0))
+        if not ordered:
+            return None, None
+        picked = weighted_pick(tree, ordered)
+        candidates = [picked] + [k for k, _ in ordered if k != picked] if picked else [k for k, _ in ordered]
+        for key in candidates:
+            if not key:
+                continue
+            alias = pick_alias(tree, model, key)
+            if alias:
+                return key, alias
+        return None, None
+    except Exception:
+        return None, None
+
+
+def failover_rewrite(send_body, hdrs, tree, base_model, excluded):
+    """把请求体改写到另一个账号的别名，并更新 x-opencode-session/Content-Length。
+
+    返回 (new_body, new_headers, new_psess, new_key, new_alias) 或 None。
+    只在尚未向客户端写响应头时调用。
+    """
+    try:
+        if not send_body or not tree or not isinstance(base_model, str) or not base_model:
+            return None
+        key, alias = _failover_pin(tree, base_model, excluded)
+        if not key or not alias:
+            return None
+        doc = json.loads(send_body)
+        if not isinstance(doc, dict):
+            return None
+        doc["model"] = alias
+        new_body = json.dumps(doc, ensure_ascii=False).encode("utf-8")
+        new_hdrs = dict(hdrs or {})
+        acct = acct_of_model(new_body)
+        psess = pool_session_id(tree, acct, session_bucket(tree) if tree else None, new_body)
+        if psess:
+            for k in [k for k in list(new_hdrs) if k.lower() == SESSION_HEADER]:
+                new_hdrs.pop(k, None)
+            new_hdrs[SESSION_HEADER] = psess
+        new_hdrs["Content-Length"] = str(len(new_body))
+        # 更新树钉号，后续请求直接走新账号，不再回退到限额号
+        _pins_remember(tree, key)
+        return new_body, new_hdrs, psess, key, alias
+    except Exception:
+        return None
+
 def note_affinity(tree, model, picked, tag, mode, reason, repin=None):
     """决策落盘 + 一行日志（每棵树每 60 s 最多一条）。
 
@@ -1593,6 +1708,8 @@ class Handler(BaseHTTPRequestHandler):
             send_body = body
             final_sid = None
             _tree = None                                # treepin-s0：会话树键（动态 session 也要用）
+            _base_model = None                          # 2026-11-13：换号时用于重选别名
+            _failed_keys = set()                        # 本次请求已确认不可用的账号
             _psess = None                               # T-sess：本次注入给上游的 x-opencode-session
             aff_tag = None                              # treepin-s1：本请求要注入的账号标签
             # treepin-s3：DSH 走 /v1/responses（provider api=openai-responses），
@@ -1655,11 +1772,38 @@ class Handler(BaseHTTPRequestHandler):
             except Exception:
                 pass
             hdrs["Content-Length"] = str(len(send_body))
-            conn.request(method, self.path, body=send_body if send_body else None,
-                         headers=hdrs)
-            _hdr_t0 = time.monotonic()
-            resp = self._upstream_getresponse(conn, method, send_body, hdrs, sess)
-            self._hdr_s = time.monotonic() - _hdr_t0
+            # 2026-11-13：等头超时的当次换号。_upstream_getresponse 内部已对同一别名
+            # 重试 HEADER_WAIT_ATTEMPTS 次；全失败后若还有健康账号，改写到另一个别名再试，
+            # 避免 3×120s 后直接 502。
+            _hdr_failovers = 0
+            while True:
+                conn.request(method, self.path, body=send_body if send_body else None,
+                             headers=hdrs)
+                _hdr_t0 = time.monotonic()
+                try:
+                    resp = self._upstream_getresponse(conn, method, send_body, hdrs, sess)
+                    self._hdr_s = time.monotonic() - _hdr_t0
+                    break
+                except Exception as _hdr_err:
+                    if (_hdr_failovers >= HEADER_FAILOVER_ATTEMPTS
+                            or not _tree or not _base_model or not send_body):
+                        raise
+                    _cur = _alias_key_of_body(send_body)
+                    if _cur:
+                        _failed_keys.add(_cur)
+                    _fo = failover_rewrite(send_body, hdrs, _tree, _base_model, _failed_keys)
+                    if not _fo:
+                        raise
+                    send_body, hdrs, _psess, _new_key, _new_alias = _fo
+                    _hdr_failovers += 1
+                    slog("upstream-header-failover %d/%d sess=%s from=%s to=%s err=%s"
+                         % (_hdr_failovers, HEADER_FAILOVER_ATTEMPTS, sess,
+                            _cur or "?", _new_key, str(_hdr_err)[:80]))
+                    try:
+                        conn.close()
+                    except Exception:
+                        pass
+                    conn = http.client.HTTPConnection(UP_HOST, UP_PORT, timeout=3600)
 
             # ---- 2026-10-17 上游偶发误判 400 的有界重试（2026-10-27 扩签名 + 预算 2）---------------
             # 现象：同一会话、同一形态的请求前一分钟还是 200，突然回
@@ -1730,7 +1874,45 @@ class Handler(BaseHTTPRequestHandler):
                     if resp.status != 429:
                         break
                     _err_body = resp.read()
+                # 2026-11-13：配额 429（账号额度耗尽）→ 当次换号重发，而不是透传给客户端。
+                # 必须换别名：同别名 model group 只有该账号一个 deployment，LiteLLM 无法换号。
+                _tries_q = 0
+                while (not any(m in _err_body for m in ADMISSION_429_MARKS)
+                       and any(m in _err_body for m in QUOTA_429_MARKS)
+                       and _tries_q < QUOTA_FAILOVER_ATTEMPTS
+                       and _tree and _base_model and send_body):
+                    _cur = _alias_key_of_body(send_body)
+                    if _cur:
+                        _failed_keys.add(_cur)
+                    _fo = failover_rewrite(send_body, hdrs, _tree, _base_model, _failed_keys)
+                    if not _fo:
+                        break
+                    send_body, hdrs, _psess, _new_key, _new_alias = _fo
+                    _tries_q += 1
+                    slog("upstream-quota-429 failover-%d/%d sess=%s from=%s to=%s alias=%s"
+                         % (_tries_q, QUOTA_FAILOVER_ATTEMPTS, sess,
+                            _cur or "?", _new_key, _new_alias))
+                    try:
+                        conn.close()
+                    except Exception:
+                        pass
+                    conn = http.client.HTTPConnection(UP_HOST, UP_PORT, timeout=3600)
+                    try:
+                        conn.request(method, self.path, body=send_body, headers=hdrs)
+                        _hdr_t0 = time.monotonic()
+                        resp = self._upstream_getresponse(conn, method, send_body, hdrs, sess)
+                        self._hdr_s = time.monotonic() - _hdr_t0
+                    except Exception as _fo_err:
+                        slog("upstream-quota-429 failover-error sess=%s tries=%d err=%s"
+                             % (sess, _tries_q, str(_fo_err)[:80]))
+                        break
+                    if resp.status != 429:
+                        break
+                    _err_body = resp.read()
                 if resp.status == 429:
+                    if _tries_q:
+                        slog("upstream-quota-429 failover-failed sess=%s status=429 tries=%d"
+                             % (sess, _tries_q))
                     if _tries_a:
                         slog("upstream-admission-429 retry-failed sess=%s status=429 tries=%d"
                              % (sess, _tries_a))
