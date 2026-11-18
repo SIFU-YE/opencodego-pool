@@ -1,0 +1,27 @@
+# OpencodeLitellmPool · session sidecar
+#   监听 127.0.0.1:4001 → 转发 127.0.0.1:4000（LiteLLM 容器）
+#   POOL_HOME / 端口等变量由 /etc/opencodelitelm-pool.env 注入（bootstrap.sh 生成，600，root-only）。
+#
+# 由 deploy/bootstrap.sh 安装到 /etc/systemd/system/；手工安装：
+#   install -m 644 deploy/systemd/opencodelitelm-pool-sidecar.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable --now opencodelitelm-pool-sidecar
+
+[Unit]
+Description=OpencodeLitellmPool session sidecar (127.0.0.1:4001 -> 127.0.0.1:4000)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/session-sidecar.py
+Restart=always
+RestartSec=2
+# sidecar 是纯透传进程，失败重启不丢状态；状态文件写在 ${POOL_HOME} 下。
+# 默认以 root 运行（读取 ${POOL_HOME}/.env 与 dsh-instance-keys.json，均 600）。
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

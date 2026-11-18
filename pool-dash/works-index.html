@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的作品</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+         margin: 0; background: #f5f7fa; color: #1f2937; }
+  .container { max-width: 720px; margin: 60px auto; padding: 0 20px; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  p.sub { color: #6b7280; margin-bottom: 32px; }
+  .card { display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+          padding: 20px 24px; margin-bottom: 16px; text-decoration: none; color: inherit;
+          transition: box-shadow .15s, transform .15s; }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); transform: translateY(-2px); }
+  .card .name { font-size: 18px; font-weight: 600; }
+  .card .desc { font-size: 14px; color: #6b7280; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>我的作品</h1>
+    <p class="sub">以下内容需要登录后访问</p>
+    <a class="card" href="/works/agent-team/">
+      <div class="name">AgentTeam</div>
+      <div class="desc">小说工业化开发系统</div>
+    </a>
+    <a class="card" href="/works/dsh/">
+      <div class="name">DSH Desktop</div>
+      <div class="desc">AI 编码工作台</div>
+    </a>
+    <a class="card" href="/works/pool/">
+      <div class="name">号池看板</div>
+      <div class="desc">OpenCode Go 账号池 · LiteLLM 网关监控</div>
+    </a>
+    <!-- 更多作品可在此追加 -->
+  </div>
+</body>
+</html>

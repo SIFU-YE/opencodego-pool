@@ -1,0 +1,44 @@
+# DSH 侧「上游失败快速暴露」补丁（2026-10-16，当晚修订）
+#
+# 目的：① 把「上游长静默」的单次代价从默认 300s 降到 90s（streamIdleTimeoutMs）；
+#       ② **不重试**（maxRetries: 0）—— 失败即报错，与号池侧 num_retries: 0 的取舍一致，
+#          避免把一次抖动放大成十几分钟的重复请求与重复计费。
+# 依据：@deepseek-ai/dsh-llm-pi-ai 的 DEFAULT_STREAM_IDLE_TIMEOUT_MS = 300000、
+#       @deepseek-ai/dsh-llm 的 DEFAULT_MAX_RETRIES = 5（**默认是 5，必须显式写 0**）；
+#       本仓库 docs/运维约定.md §3 亦要求 streamIdleTimeoutMs: 90000，但从未落到配置里。
+#
+# 应用（在 DSH profile 目录下，先备份）：
+#   cd <profile dir>            # 例如 C:\Users\<你>\.dsh\profiles\desktop
+#   cp cordis.patch.yml cordis.patch.yml.bak-idle-timeout-$(date +%Y%m%d-%H%M%S)
+#   git apply --verbose /path/to/cordis-idle-timeout.patch    # 或 patch -p1 < 该文件
+#
+# 校验（离线，不改运行中实例）：
+#   python3 dsh-config/validate_pi_ai_providers.py <profile dir>/cordis.patch.yml
+#
+# 生效：provider 级参数在 DSH 启动时读取 → 必须重启 DSH 主程序。
+# 回滚：还原上面的 .bak 文件并重启 DSH。
+#
+--- a/cordis.patch.yml
++++ b/cordis.patch.yml
+@@ -30,6 +30,10 @@
+         apiKeyEnv: LITELLM_REASPONS_API_KEY
+         api: openai-responses
+         baseURL: https://<pool-host>/works/pool/v1
++        streamIdleTimeoutMs: 90000
++        retryPolicy:
++          mode: normal
++          maxRetries: 0
+         models:
+           - id: muse-spark-1.3-contributor
+             name: muse-spark-1.3-contributor
+@@ -43,6 +47,10 @@
+         apiKeyEnv: LITELLM_COMPLETIONS_API_KEY
+         api: openai-completions
+         baseURL: https://<pool-host>/works/pool/v1
++        streamIdleTimeoutMs: 90000
++        retryPolicy:
++          mode: normal
++          maxRetries: 0
+         models:
+           - id: deepseek-v4.1-flash
+             name: deepseek-v4.1-flash

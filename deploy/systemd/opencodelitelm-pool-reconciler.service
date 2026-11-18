@@ -1,0 +1,26 @@
+# OpencodeLitellmPool · 配置热应用器（reconciler）
+#   常驻轮询 ${POOL_HOME}：检测 .env / model allowlist 变更 → 通过 LiteLLM 管理 API 热应用。
+#   不监听任何端口（无新增攻击面）；看板需要即时触发时由 dashboard 侧执行 `--once`。
+#
+#   CLI：pool_reconciler.py [--watch|--once] [--interval N] [--dry-run] [--check]
+#   POOL_HOME / POOL_RECONCILE_INTERVAL 由 /etc/opencodelitelm-pool.env 注入。
+#
+# 由 deploy/bootstrap.sh 安装并启用（仓库里还没有 pool_reconciler.py 时 bootstrap 会跳过）。
+
+[Unit]
+Description=OpencodeLitellmPool reconciler (hot-apply .env / allowlist changes)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/pool_reconciler.py --watch --interval ${POOL_RECONCILE_INTERVAL}
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

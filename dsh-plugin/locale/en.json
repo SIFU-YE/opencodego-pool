@@ -1,0 +1,4 @@
+{
+  "title": "Pool session affinity (tree-key injection)",
+  "description": "Injects the root session id as an invisible zero-width payload at the end of outgoing messages so the pool sidecar can pin one account per session tree."
+}

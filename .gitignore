@@ -1,0 +1,33 @@
+# 密钥与运行时状态：绝不提交
+.env
+.env.*
+!.env.example
+dsh-instance-keys.json
+*.key
+*.pem
+
+# 内部文档（设计 / 变更 / 巡检记录）：统一放仓库外的私密资料目录，不入库
+# 位置与引用方式见 PRIVATE-DATA.md；迁移前的历史见 git 历史（仅本地，不推送该目录）。
+docs/
+
+# 号池运行时产物
+*.jsonl
+*.state.json
+usage-snapshot.json
+routing-share.json
+pool-affinity.json
+*.bak
+*.bak-*
+__pycache__/
+*.pyc
+
+# 本地/编辑器
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+node_modules/
+
+# 看板截图（构建产物；可能拍到账号标识，不入库）
+pool-dash/shots/
+*.png

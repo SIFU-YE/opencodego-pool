@@ -1,0 +1,26 @@
+# ⚠️ 旧版 unit（历史部署沿用）：独立部署请用 deploy/systemd/opencodelitelm-pool-sidecar.service
+#    新部署套件的 unit 统一由 deploy/bootstrap.sh 安装并注入 /etc/opencodelitelm-pool.env。
+#    本文件保留为旧机兼容；路径改用 ${POOL_HOME}（默认 /opt/litellm），不再写死用户目录。
+#
+# 安装（旧机）：
+#   install -m 644 pool/systemd/litellm-session-sidecar.service /etc/systemd/system/
+#   并在 /etc/opencodelitelm-pool.env 写入 POOL_HOME=/opt/litellm
+#   systemctl daemon-reload && systemctl enable --now litellm-session-sidecar
+
+[Unit]
+Description=LiteLLM session-affinity sidecar (127.0.0.1:4001 -> 127.0.0.1:4000, injects metadata.session_id)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/session-sidecar.py
+Restart=always
+RestartSec=2
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
