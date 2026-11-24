@@ -1,0 +1,28 @@
+# OpencodeLitellmPool · 看板（驾驶舱 `/`，管理控制台是页内一个页签）
+#   监听 127.0.0.1:${POOL_DASHBOARD_PORT}（默认 4010，只绑回环）
+#   POOL_HOME / POOL_DASHBOARD_PORT 等变量由 /etc/opencodelitelm-pool.env 注入。
+#
+# 安全模型（重要）：
+#   · 本项目不内置账号体系，也没有 Halo / auth_request 依赖；
+#   · 默认只监听 127.0.0.1 + 服务端 Host 白名单，远程访问请自备 VPN 或反代鉴权；
+#   · 需要 docker 读取容器侧请求日志（docker exec/logs），故默认以 root 运行。
+#
+# 由 deploy/bootstrap.sh 安装到 /etc/systemd/system/。
+
+[Unit]
+Description=OpencodeLitellmPool dashboard (127.0.0.1:4010, admin console is an in-page tab)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/dashboard.py --listen 127.0.0.1:${POOL_DASHBOARD_PORT}
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

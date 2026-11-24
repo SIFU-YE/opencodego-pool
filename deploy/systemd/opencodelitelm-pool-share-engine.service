@@ -1,0 +1,22 @@
+# OpencodeLitellmPool · 份额引擎（可选，默认不启用）
+#   计算各账号目标份额 → ${POOL_HOME}/routing-share.json；由 sidecar 热读（fail-open）。
+#   这是「只算不注入」的观察态组件，不在请求关键路径上。
+#
+# 默认不安装也不启用；需要时：
+#   sudo systemctl enable --now opencodelitelm-pool-share-engine.timer
+#   （bootstrap.sh 会安装 unit 文件，但不 enable）
+#
+# 由 deploy/bootstrap.sh 安装到 /etc/systemd/system/。
+
+[Unit]
+Description=OpencodeLitellmPool share-engine (routing-share.json, optional)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/opencodelitelm-pool.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env python3 ${POOL_HOME}/share-engine.py
+Nice=10
+StandardOutput=journal
+StandardError=journal

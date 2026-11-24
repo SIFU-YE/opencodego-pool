@@ -1,0 +1,15 @@
+[Unit]
+Description=pool egress liveness watchdog (5s probe, clash API switch)
+After=pool-egress.service
+Wants=pool-egress.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 /opt/pool-egress/watchdog.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
