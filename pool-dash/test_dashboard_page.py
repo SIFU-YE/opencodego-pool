@@ -313,5 +313,16 @@ class MonthlyTokenTest(unittest.TestCase):
         self.assertIn("本月累计", page)
 
 
+
+class DashboardKeyUsageTest(unittest.TestCase):
+    """2026-11-25：用量分析页签的「每个 KEY 的使用情况」面板不得回退。"""
+
+    def test_key_usage_panel_present(self):
+        page = dashboard.render_page()
+        for marker in ('id="keyUsage"', "KEY 用量", "每个 KEY 的使用情况",
+                       "renderKeyUsage", 'id="keyUsageTag"'):
+            self.assertIn(marker, page, marker)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

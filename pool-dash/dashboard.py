@@ -757,20 +757,25 @@ _HIST_ALL = {"rows": [], "sig": None}
 
 
 def _reqlog_files():
-    files = []
+    # 2026-11-25 修复：旧实现先 [当前文件] + 全部归档，再取 files[-N:]。
+    # 归档数 >= N 时当前文件正好被切掉 → 看板漏掉当天全部流量（KEY 用量、
+    # 账号/模型/来源统计一起少算）。当前文件必须单独保留配额。
+    current = LITELLM_REQLOG_HOST if os.path.exists(LITELLM_REQLOG_HOST) else None
+    archives = []
     try:
-        if os.path.exists(LITELLM_REQLOG_HOST):
-            files.append(LITELLM_REQLOG_HOST)
         import glob as _glob
         for p in sorted(_glob.glob(REQLOG_ARCHIVE_GLOB)):
             try:
-                if os.path.isfile(p):
-                    files.append(p)
+                if os.path.isfile(p) and p != current:
+                    archives.append(p)
             except OSError:
                 pass
     except Exception:
         pass
-    return files[-REQLOG_MAX_FILES:] if REQLOG_MAX_FILES > 0 else files
+    if REQLOG_MAX_FILES > 0:
+        keep = max(0, REQLOG_MAX_FILES - (1 if current else 0))
+        archives = archives[-keep:] if keep else []
+    return ([current] if current else []) + archives
 
 
 def _parse_reqlog_file(path):
@@ -1241,6 +1246,35 @@ def _relabel_routing(node, labels):
     return node
 
 
+# 实例键标签 → 尾号（只读标签/尾号，绝不读密钥值）。看板与 sidecar 同机，文件不存在时降级为空。
+INSTANCE_KEYS_FILE = os.environ.get("POOL_INSTANCE_KEYS") or "/opt/litellm/dsh-instance-keys.json"
+
+
+def instance_key_labels():
+    """{label: key_tail}；文件缺失/格式异常返回 {}（不阻断 summary）。"""
+    try:
+        with open(INSTANCE_KEYS_FILE, "r", encoding="utf-8") as fh:
+            doc = json.load(fh)
+        if not isinstance(doc, dict):
+            return {}
+        return {str(v): str(k)[-6:] for k, v in doc.items()
+                if not str(k).startswith("_") and str(v).strip()}
+    except Exception:
+        return {}
+
+
+def account_key_display(label):
+    """OCG_KEY_n / OCG_PENDING_KEY_n → 邮箱（看板 v16：不向用户显示 OCG_KEY_n）。"""
+    m = re.match(r"^OCG_(?:PENDING_)?KEY_(\d+)$", str(label or ""))
+    if not m:
+        return label
+    try:
+        name = account_email(m.group(1), env(label))[0]
+        return name or label
+    except Exception:
+        return label
+
+
 def summary(range_key="all"):
     """号池总览。range_key：all=全部日志期 / 24=近24h / 168=近7天（非法值按 all）。"""
     out = {"health": "down", "models": 0, "deployments": 0, "accounts": 0,
@@ -1347,6 +1381,7 @@ def summary(range_key="all"):
         bsrc, src_hour = {}, {}                 # 来源(local/ext)用量 / 来源按小时
         cache_m = {}                            # 按模型缓存命中
         sess_agg = {}                           # 按会话聚合（Top10）
+        key_agg = {}                            # 按 lbl（实例键/账号键标签）聚合
         tot = {"hits": 0, "pt": 0, "ct": 0, "tt": 0, "firstTs": 0, "lastTs": 0}
         cut24 = time.time() * 1000 - 24 * 3600 * 1000
         # 「近 24h」口径固定按 24h 算，不随范围下拉变化（KPI/账号表里明确写「近24h」）
@@ -1428,6 +1463,16 @@ def summary(range_key="all"):
             tot["pt"] += pt
             tot["ct"] += ct
             tot["tt"] += tt
+            # KEY 维度：lbl = sidecar 注入的实例键 label；主键/直连为空；部分客户端
+            # metadata.pool_label 会带账号键标签（OCG_KEY_n）。全部保留，避免流量漏计。
+            _lbl = str(r.get("lbl") or "").strip()
+            _ka = key_agg.setdefault(_lbl, {"reqs": 0, "pt": 0, "ct": 0, "tt": 0, "lastTs": 0})
+            _ka["reqs"] += 1
+            _ka["pt"] += pt
+            _ka["ct"] += ct
+            _ka["tt"] += tt
+            if ts > _ka["lastTs"]:
+                _ka["lastTs"] = ts
             if ts:
                 tot["firstTs"] = min(tot["firstTs"] or ts, ts)
                 tot["lastTs"] = max(tot["lastTs"], ts)
@@ -1502,6 +1547,33 @@ def summary(range_key="all"):
         for pa in accts:
             pa["h24_pct"] = round(pa.get("h24_tt", 0) * 100.0 / h24_total, 1)
         out["by_account"] = accts
+        # ---- KEY 用量（实例键 + 账号键标签 + 主键/直连，按当前 range 聚合）----
+        _klabels = instance_key_labels()
+        _krows = []
+        for _lbl in set(key_agg) | set(_klabels):
+            _v = key_agg.get(_lbl) or {"reqs": 0, "pt": 0, "ct": 0, "tt": 0, "lastTs": 0}
+            if _lbl in _klabels:
+                _kind, _tail = "instance", _klabels[_lbl]
+            elif re.match(r"^OCG_KEY_\d+$", _lbl or ""):
+                _kind, _tail = "account", ""
+            elif not _lbl:
+                _kind, _tail = "direct", ""
+            else:
+                _kind, _tail = "other", ""
+            _disp = _lbl or "（主键/直连，无实例键）"
+            if _kind == "account":
+                _disp = account_key_display(_lbl)
+            _krows.append({"label": _disp, "raw": (_lbl if _disp != _lbl else ""),
+                           "kind": _kind, "tail": _tail, "reqs": _v["reqs"],
+                           "pt": _v["pt"], "ct": _v["ct"], "tt": _v["tt"],
+                           "lastTs": _v["lastTs"]})
+        _krows.sort(key=lambda x: (-x["reqs"], x["label"]))
+        out["key_usage"] = _krows
+        out["key_usage_window"] = {"all": "全部日志期", "24": "近24h", "168": "近7天"}.get(
+            str(range_key), "全部日志期")
+        out["key_usage_note"] = ("实例键来自 dsh-instance-keys.json；账号键标签映射为邮箱；"
+                                 "无 lbl 的主键/直连流量单列，避免漏计。本表随右上角范围变化"
+                                 "（管理控制台的「今日用量」固定为今日口径）。")
         # 口径拆分（旧 KPI「活跃账号 9 / 池内 6」的修正）：
         #   历史尾号 = 日志里出现过、但不在当前 .env 任何 key 尾号里（已轮换/下线）→ 单列、不进账号数
         #   活跃 = 当前账号里有调用的（含禁用槽位，但绝不含历史尾号）
@@ -2691,6 +2763,16 @@ tbody tr.hist td{color:var(--dim)}
    <tbody id="acctShare"></tbody></table></div></div>
 </section>
 </div>
+<h2 class="sec">KEY 用量 <span>实例键 / 账号键标签 / 未归因 · 随右上角范围变化 · 条形按请求数归一</span></h2>
+<div class="grid">
+<section class="panel c12" data-key="keyusage">
+ <div class="ph"><h3>每个 KEY 的使用情况</h3><span class="tag" id="keyUsageTag">今日 · 当前范围</span></div>
+ <div class="pbody"><div class="note" id="keyUsageNote">实例键来自 dsh-instance-keys.json；账号键标签映射为邮箱；无 lbl 的主键/直连流量单列，避免漏计。</div>
+  <div class="scroll" style="max-height:320px;margin-top:6px"><table class="sortable" id="keyUsageTable">
+   <thead><tr><th>KEY</th><th>类型</th><th class="num">请求</th><th class="num">Prompt</th><th class="num">Completion</th><th class="num">总 Token</th><th>最近活动</th></tr></thead>
+   <tbody id="keyUsage"></tbody></table></div></div>
+</section>
+</div>
 <h2 class="sec">账号 × 模型 / 缓存命中 <span>pool-requests.jsonl 按账号与按小时聚合</span></h2>
 <div class="grid">
 <section class="panel c12" data-key="acctmodel">
@@ -3166,6 +3248,23 @@ function renderUsage(d){
    "<td class='num'>"+fmtTok(a.h24_tt)+"</td><td class='num'>"+num(a.h24_pct).toFixed(1)+"%</td><td>"+top3+"</td>"+
    "<td>"+(a.lastTs?fmtTs(a.lastTs):"—")+"</td></tr>"}).join("")||
   "<tr><td colspan='10' style='color:#8b93a3'>暂无请求日志</td></tr>"}
+/* ---------------- 每个 KEY 的使用情况（实例键 / 账号键标签 / 主键直连） ---------------- */
+function renderKeyUsage(d){
+ var rows=arr(d.key_usage),tb=$("keyUsage");if(!tb)return;
+ var max=1;rows.forEach(function(k){max=Math.max(max,num(k.reqs))});
+ var note=$("keyUsageNote"),tag=$("keyUsageTag");
+ if(tag)tag.textContent=(d.key_usage_window||"当前范围")+" · "+rows.length+" 个 KEY";
+ if(note&&d.key_usage_note)note.innerHTML=esc(d.key_usage_note);
+ var kindName={instance:"实例键",account:"账号键标签",direct:"主键/直连",other:"其他标签"};
+ tb.innerHTML=rows.map(function(k){
+  var pct=Math.max(0,Math.min(100,num(k.reqs)*100/max));
+  var badge=k.kind==="instance"?"on":(k.kind==="account"?"warn":(k.kind==="direct"?"": "off"));
+  return '<tr><td title="'+(k.raw?("原始标签: "+esc(k.raw)):"")+'">'+esc(k.label||"—")+(k.tail?" <span class='mono' style='color:#8b93a3'>…"+esc(k.tail)+"</span>":"")+
+   "</td><td><span class='badge "+badge+"'>"+esc(kindName[k.kind]||k.kind)+"</span></td>"+
+   "<td class='num'>"+fmtInt(k.reqs)+"<div style='height:4px;background:#1f2937;border-radius:2px;margin-top:3px'><i style='display:block;height:4px;border-radius:2px;background:"+(k.kind==="instance"?"#60a5fa":(k.kind==="account"?"#fbbf24":"#6b7280"))+";width:"+pct.toFixed(1)+"%'></i></div></td>"+
+   "<td class='num'>"+fmtTok(k.pt)+"</td><td class='num'>"+fmtTok(k.ct)+"</td><td class='num'><b>"+fmtTok(k.tt)+"</b></td>"+
+   "<td>"+(k.lastTs?fmtTs(k.lastTs):"—")+"</td></tr>"}).join("")||
+  "<tr><td colspan='7' style='color:#8b93a3'>当前范围暂无请求日志</td></tr>"}
 /* ---------------- 账号详情卡（三态：在池启用 / 已禁用 / 暂存待启用） ----------------
    2026-10-19 dashfix：旧实现把「是否在池」判成 config.yaml 里有没有 os.environ/OCG_KEY_n，
    DB 化后恒为 False → 6 张卡全部误标「已剔除 · 无限额部署」。现以控制面为准（三态）：
@@ -3562,7 +3661,7 @@ async function load(){
   $("healthTxt").textContent=alive?"LiteLLM alive":"LiteLLM down";
   renderKpis();renderModelBar();renderTimeline();renderAcctModel();renderQuota();
   renderSessTree();renderLatency();renderSrc();renderHours();
-  renderRecent();renderUsage(d);renderAcctDetail();renderRouting(d.routing);
+  renderRecent();renderUsage(d);renderKeyUsage(d);renderAcctDetail();renderRouting(d.routing);
   $("refresh").textContent="每次打开即时拉取 · 自动刷新"+((STATE.auto?"（"+Math.round(STATE.iv/1000)+"s）":"（已关闭）"))+
    " · 更新于 "+new Date().toLocaleTimeString("zh-CN")+" · 全部图表本地 ECharts 渲染，无外网依赖";
  }catch(e){$("refresh").textContent="加载失败: "+e}

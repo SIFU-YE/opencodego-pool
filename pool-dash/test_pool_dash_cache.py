@@ -224,3 +224,44 @@ class AlignEquivalenceTest(unittest.TestCase):
         self.assertEqual(D._align_sids(idx, "m", 1000 + D.ALIGN_MS + 1), set())
         self.assertEqual(D._align_sids(idx, "other", 900000), {"b"})   # 无模型会话不被模型过滤
         self.assertEqual(D._align_sids(idx, "", 900000), {"b", "c"})   # 请求无模型 → 全量
+
+
+class ReqlogFileSelectionTest(unittest.TestCase):
+    """2026-11-25 修复回归：归档数达到 REQLOG_MAX_FILES 时当前日志仍必须入选。
+
+    旧实现 `[当前文件] + 全部归档` 再取 `[-N:]`，N=30 且归档 >=30 时当前文件
+    正好被切掉，导致看板漏掉当天全部流量。
+    """
+
+    def test_current_file_kept_when_archive_cap_reached(self):
+        with tempfile.TemporaryDirectory() as td:
+            cur = os.path.join(td, "pool-requests.jsonl")
+            open(cur, "w").close()
+            for i in range(5):
+                open(os.path.join(td, "pool-requests.jsonl-2026110%d" % i), "w").close()
+            old = (D.LITELLM_REQLOG_HOST, D.REQLOG_ARCHIVE_GLOB, D.REQLOG_MAX_FILES)
+            try:
+                D.LITELLM_REQLOG_HOST = cur
+                D.REQLOG_ARCHIVE_GLOB = os.path.join(td, "pool-requests.jsonl-*")
+                D.REQLOG_MAX_FILES = 3
+                files = D._reqlog_files()
+                self.assertIn(cur, files, "当前文件被归档切片丢掉了")
+                self.assertEqual(files[0], cur)
+                self.assertEqual(len(files), 3)
+            finally:
+                (D.LITELLM_REQLOG_HOST, D.REQLOG_ARCHIVE_GLOB, D.REQLOG_MAX_FILES) = old
+
+    def test_no_current_keeps_recent_archives(self):
+        with tempfile.TemporaryDirectory() as td:
+            for i in range(4):
+                open(os.path.join(td, "pool-requests.jsonl-2026110%d" % i), "w").close()
+            old = (D.LITELLM_REQLOG_HOST, D.REQLOG_ARCHIVE_GLOB, D.REQLOG_MAX_FILES)
+            try:
+                D.LITELLM_REQLOG_HOST = os.path.join(td, "missing.jsonl")
+                D.REQLOG_ARCHIVE_GLOB = os.path.join(td, "pool-requests.jsonl-*")
+                D.REQLOG_MAX_FILES = 2
+                files = D._reqlog_files()
+                self.assertEqual(len(files), 2)
+                self.assertTrue(all(f.startswith(os.path.join(td, "pool-requests.jsonl-")) for f in files))
+            finally:
+                (D.LITELLM_REQLOG_HOST, D.REQLOG_ARCHIVE_GLOB, D.REQLOG_MAX_FILES) = old
