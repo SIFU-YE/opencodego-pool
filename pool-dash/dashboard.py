@@ -1246,6 +1246,18 @@ def _relabel_routing(node, labels):
     return node
 
 
+def account_key_display(label):
+    """OCG_KEY_n / OCG_PENDING_KEY_n → 邮箱（看板 v16：不向用户显示 OCG_KEY_n）。"""
+    m = re.match(r"^OCG_(?:PENDING_)?KEY_(\d+)$", str(label or ""))
+    if not m:
+        return label
+    try:
+        name = account_email(m.group(1), env(label))[0]
+        return name or label
+    except Exception:
+        return label
+
+
 # 实例键标签 → 尾号（只读标签/尾号，绝不读密钥值）。看板与 sidecar 同机，文件不存在时降级为空。
 INSTANCE_KEYS_FILE = os.environ.get("POOL_INSTANCE_KEYS") or "/opt/litellm/dsh-instance-keys.json"
 
@@ -1261,18 +1273,6 @@ def instance_key_labels():
                 if not str(k).startswith("_") and str(v).strip()}
     except Exception:
         return {}
-
-
-def account_key_display(label):
-    """OCG_KEY_n / OCG_PENDING_KEY_n → 邮箱（看板 v16：不向用户显示 OCG_KEY_n）。"""
-    m = re.match(r"^OCG_(?:PENDING_)?KEY_(\d+)$", str(label or ""))
-    if not m:
-        return label
-    try:
-        name = account_email(m.group(1), env(label))[0]
-        return name or label
-    except Exception:
-        return label
 
 
 def summary(range_key="all"):
@@ -1571,8 +1571,8 @@ def summary(range_key="all"):
         out["key_usage"] = _krows
         out["key_usage_window"] = {"all": "全部日志期", "24": "近24h", "168": "近7天"}.get(
             str(range_key), "全部日志期")
-        out["key_usage_note"] = ("实例键来自 dsh-instance-keys.json；账号键标签映射为邮箱；"
-                                 "无 lbl 的主键/直连流量单列，避免漏计。本表随右上角范围变化"
+        out["key_usage_note"] = ("实例键来自 dsh-instance-keys.json；账号键标签映射为邮箱；条形按实例键/账号键最大请求数归一，"
+                                 "主键/直连流量单列、条形仅作参考。本表随右上角范围变化"
                                  "（管理控制台的「今日用量」固定为今日口径）。")
         # 口径拆分（旧 KPI「活跃账号 9 / 池内 6」的修正）：
         #   历史尾号 = 日志里出现过、但不在当前 .env 任何 key 尾号里（已轮换/下线）→ 单列、不进账号数
@@ -2515,6 +2515,13 @@ html[data-theme="light"] .prov input,html[data-theme="light"] .prov select{backg
 html[data-theme="light"] .gridbox label:hover{background:#f2f6fc}
 html[data-theme="light"] #bootWarn{background:#fdf0f0;border-color:#f0c6c6;color:#a32626}
 html[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c3cddd;background-clip:content-box}
+html[data-theme="light"] #recQ,html[data-theme="light"] #recOnly{background:#eef3fb !important;color:#16243a !important;border-color:#c3cddd !important}
+html[data-theme="light"] .rt-stat,html[data-theme="light"] .rt-block{background:#f7fafe;border-color:#d7e2f2}
+html[data-theme="light"] .rt-block h4,html[data-theme="light"] .rt-mini{color:#52627a}
+html[data-theme="light"] .rt-bar,html[data-theme="light"] .meter{background:#e2e8f0}
+html[data-theme="light"] th{background:#f1f5fb}
+html[data-theme="light"] .chip,html[data-theme="light"] .badge{background:#f4f7fd;border-color:#d7e2f2}
+
 /* ---- KPI 区：auto-fit 自适应增列（宽屏自动铺满 7 张卡，窄屏回落到 3/2 列） ---- */
 .kpis{grid-template-columns:repeat(auto-fit,minmax(clamp(158px,10.6vw,262px),1fr));gap:var(--gap)}
 .kpi{padding:calc(var(--pad) * .78) var(--pad)}
@@ -2711,7 +2718,7 @@ tbody tr.hist td{color:var(--dim)}
 </div>
 <div class="pair">
 <section class="panel c12" data-key="timeline">
-  <div class="ph"><h3>Token 时间线</h3><span class="tag">dataZoom 可拖拽缩放 · 滚轮缩放</span></div>
+  <div class="ph"><h3>Token 时间线</h3><span class="tag">滚轮缩放 · 图表内拖拽</span></div>
   <div class="pbody"><div class="chart h300" id="chart-timeline" data-chart="1"></div><div class="empty">日志期内无按小时 Token 记录</div></div>
  </section>
 <section class="panel c12" data-key="hours">
@@ -2756,10 +2763,10 @@ tbody tr.hist td{color:var(--dim)}
  <div class="ph"><h3>账号份额与用量</h3><span class="tag">含近 24h 份额</span></div>
  <div class="pbody"><div class="chips" id="acctShareChips" style="margin-bottom:6px"></div>
   <div class="note" id="usageNote">份额按累计 Token 计算。</div>
-  <div class="scroll" style="max-height:340px;margin-top:6px"><table class="sortable" id="usageTable">
+  <div class="scroll" style="max-height:430px;margin-top:6px"><table class="sortable" id="usageTable">
    <thead><tr><th data-sk="account">账号（邮箱）</th><th data-sk="status">状态</th><th class="num" data-sk="hits">请求</th><th class="num" data-sk="pt">Prompt</th>
    <th class="num" data-sk="ct">Completion</th><th class="num" data-sk="tt">总 Token</th><th class="num" data-sk="h24_tt">近24h Token</th>
-   <th class="num" data-sk="h24_pct">近24h占比</th><th>主要模型（Top3）</th><th data-sk="lastTs">最近活动</th></tr></thead>
+   <th class="num" data-sk="h24_pct" title="该账号近24h Token ÷ 全部账号近24h Token">近24h占比</th><th>主要模型（Top3）</th><th data-sk="lastTs">最近活动</th></tr></thead>
    <tbody id="acctShare"></tbody></table></div></div>
 </section>
 </div>
@@ -2767,7 +2774,7 @@ tbody tr.hist td{color:var(--dim)}
 <div class="grid">
 <section class="panel c12" data-key="keyusage">
  <div class="ph"><h3>每个 KEY 的使用情况</h3><span class="tag" id="keyUsageTag">今日 · 当前范围</span></div>
- <div class="pbody"><div class="note" id="keyUsageNote">实例键来自 dsh-instance-keys.json；账号键标签映射为邮箱；无 lbl 的主键/直连流量单列，避免漏计。</div>
+ <div class="pbody"><div class="note" id="keyUsageNote">实例键来自 dsh-instance-keys.json；账号键标签（OCG_KEY_n）与无 lbl 的主键/直连流量单列，避免漏计。</div>
   <div class="scroll" style="max-height:320px;margin-top:6px"><table class="sortable" id="keyUsageTable">
    <thead><tr><th>KEY</th><th>类型</th><th class="num">请求</th><th class="num">Prompt</th><th class="num">Completion</th><th class="num">总 Token</th><th>最近活动</th></tr></thead>
    <tbody id="keyUsage"></tbody></table></div></div>
@@ -2797,7 +2804,7 @@ tbody tr.hist td{color:var(--dim)}
 </div>
 <div class="grid">
 <section class="panel c12" data-key="recent">
-  <div class="ph"><h3>错误 / 慢请求明细</h3>
+  <div class="ph"><h3>最近请求明细 <span class="tag">容器日志样本 · 可按状态筛选</span></h3>
    <input type="search" id="recQ" placeholder="筛选 路径 / 状态码…" style="background:#1d2230;color:var(--txt);border:1px solid var(--line2);border-radius:7px;padding:3px 8px;font-size:12px;width:190px">
    <select id="recOnly" style="background:#1d2230;color:var(--txt);border:1px solid var(--line2);border-radius:7px;padding:3px 7px;font-size:12px">
     <option value="all">全部</option><option value="err">仅失败 ≥400</option><option value="ok">仅成功 &lt;400</option></select></div>
@@ -2862,7 +2869,7 @@ function fmtInt(n){return (Math.round(+n||0)).toLocaleString("en-US")}
 function fmtTok(n){n=+n||0;var a=Math.abs(n);
  if(a>=1e12)return (n/1e12).toFixed(2)+"T";if(a>=1e9)return (n/1e9).toFixed(2)+"B";
  if(a>=1e6)return (n/1e6).toFixed(2)+"M";return fmtInt(n)}
-function fmtMs(ms){ms=Math.round(+ms||0);if(ms<1000)return ms+"ms";if(ms<60000)return (ms/1000).toFixed(1)+"s";
+function fmtMs(ms){ms=Math.round(+ms||0);if(ms<=0)return "0s";if(ms<1000)return ms+"ms";if(ms<60000)return (ms/1000).toFixed(1)+"s";
  var m=Math.floor(ms/60000),s=Math.round((ms%60000)/1000);return m+"m"+(s<10?"0":"")+s+"s"}
 function fmtTs(ms){if(!ms)return "-";var d=new Date(+ms),p=function(n){return String(n).padStart(2,"0")};
  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}
@@ -2888,18 +2895,30 @@ function setEmpty(id,isEmpty,msg){
  var e=box.querySelector(".empty");if(e&&msg)e.textContent=msg}
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
         set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-var AX={axisLine:{lineStyle:{color:"#2c3342"}},axisTick:{show:false},axisLabel:{color:"#8b93a3",fontSize:10.5},
-        splitLine:{lineStyle:{color:"#1f242e"}}};
-var TIPB={backgroundColor:"rgba(13,15,20,.97)",borderColor:"#2c3342",borderWidth:1,padding:[7,10],
-          textStyle:{color:"#e6e9ef",fontSize:12},extraCssText:"border-radius:8px;box-shadow:0 10px 26px rgba(0,0,0,.5)"};
+function isLightTheme(){return document.documentElement.getAttribute("data-theme")==="light"}
+function makeAxisTheme(){return isLightTheme()
+  ? {axisLine:{lineStyle:{color:"#c3cddd"}},axisTick:{show:false},axisLabel:{color:"#52627a",fontSize:10.5},
+     splitLine:{lineStyle:{color:"#e6edf6"}}}
+  : {axisLine:{lineStyle:{color:"#2c3342"}},axisTick:{show:false},axisLabel:{color:"#8b93a3",fontSize:10.5},
+     splitLine:{lineStyle:{color:"#1f242e"}}}}
+function makeTipTheme(){return isLightTheme()
+  ? {backgroundColor:"rgba(255,255,255,.98)",borderColor:"#c3cddd",borderWidth:1,padding:[7,10],
+     textStyle:{color:"#16243a",fontSize:12},extraCssText:"border-radius:8px;box-shadow:0 10px 26px rgba(22,38,70,.18)"}
+  : {backgroundColor:"rgba(13,15,20,.97)",borderColor:"#2c3342",borderWidth:1,padding:[7,10],
+     textStyle:{color:"#e6e9ef",fontSize:12},extraCssText:"border-radius:8px;box-shadow:0 10px 26px rgba(0,0,0,.5)"}}
+var AX=makeAxisTheme();
+var TIPB=makeTipTheme();
+function refreshChartTheme(){
+ var a=makeAxisTheme();AX.axisLine=a.axisLine;AX.axisLabel=a.axisLabel;AX.splitLine=a.splitLine;TIPB=makeTipTheme();
+}
 function tipAxis(ex){return Object.assign({trigger:"axis",axisPointer:{type:"shadow",shadowStyle:{color:"rgba(96,165,250,.07)"}}},TIPB,ex||{})}
 function tipItem(ex){return Object.assign({trigger:"item"},TIPB,ex||{})}
 function gridOpt(t,b,l,r){return {left:l==null?6:l,right:r==null?12:r,top:t==null?28:t,bottom:b==null?4:b,containLabel:true}}
-function legendOpt(extra){return Object.assign({textStyle:{color:"#8b93a3",fontSize:11},itemWidth:11,itemHeight:8,top:2,right:8},extra||{})}
+function legendOpt(extra){return Object.assign({textStyle:{color:isLightTheme()?"#52627a":"#8b93a3",fontSize:11},itemWidth:11,itemHeight:8,top:2,right:8},extra||{})}
 /* ---------------- KPI ---------------- */
-var KPIS=[{k:"total",n:"总请求",c:"#60a5fa"},{k:"success",n:"成功率",c:"#4ade80"},{k:"tt",n:"总 Token",c:"#a78bfa"},
+var KPIS=[{k:"total",n:"总请求",c:"#60a5fa"},{k:"success",n:"样本成功率",c:"#4ade80"},{k:"tt",n:"总 Token",c:"#a78bfa"},
           {k:"mtt",n:"本月 Token",c:"#38bdf8"},
-          {k:"cache",n:"缓存命中",c:"#22d3ee"},{k:"acct",n:"在池账号",c:"#fbbf24"},{k:"models",n:"当前模型数",c:"#f472b6"}];
+          {k:"cache",n:"缓存命中",c:"#22d3ee"},{k:"acct",n:"在池账号",c:"#fbbf24"},{k:"models",n:"模型 / 部署",c:"#f472b6"}];
 var DETAIL={};
 function statusParts(){
  var bs=obj(SUM&&SUM.by_status),o={ok:0,redir:0,c4:0,c5:0,other:0},tot=0;
@@ -2914,8 +2933,8 @@ function renderKpis(){
      nDep=num(d.accounts_deployed);
  var okPct=st.tot?((st.tot-st.c4-st.c5)*100/st.tot):0;
  var vals={
-  total:{v:fmtInt(d.total),s:"失败样本 "+fmtInt(st.c4+st.c5)+" · 窗口 "+fmtInt(d.total),cls:(st.c4+st.c5)>0?"warn":""},
-  success:{v:(st.tot?okPct.toFixed(1):"—")+(st.tot?"%":""),s:st.tot?("2xx "+fmtInt(st.ok)+" · 3xx "+fmtInt(st.redir)):"暂无请求",cls:st.tot?(okPct>=99?"ok":okPct>=95?"warn":"err"):"dimv"},
+  total:{v:fmtInt(d.total),s:"请求级日志累计 · 失败样本 "+fmtInt(st.c4+st.c5),tip:"请求级日志（pool-requests.jsonl + 归档）累计；失败样本来自容器日志最近样本",cls:(st.c4+st.c5)>0?"warn":""},
+  success:{v:(st.tot?okPct.toFixed(1):"—")+(st.tot?"%":""),s:st.tot?("2xx "+fmtInt(st.ok)+" · 容器样本 "+fmtInt(st.tot)):"暂无请求",tip:st.tot?("仅按容器日志最近样本计算，不代表总请求 "+fmtInt(d.total)+"；3xx "+fmtInt(st.redir)):"暂无容器日志样本",cls:st.tot?(okPct>=99?"ok":okPct>=95?"warn":"err"):"dimv"},
   tt:{v:fmtTok(ut.tt),s:"P "+fmtTok(ut.pt)+" / C "+fmtTok(ut.ct),cls:""},
   mtt:{v:fmtTok(mu.tt),s:mu.hits?("自 "+fmtTsShort(mu.since)+" · "+fmtInt(mu.hits)+" 请求"):"本月暂无请求",cls:""},
   cache:{v:num(cr.rate).toFixed(1)+"%",s:"cached "+fmtTok(cr.cached)+" / pt "+fmtTok(cr.pt),cls:num(cr.rate)>=30?"ok":num(cr.rate)>0?"warn":"dimv"},
@@ -2923,10 +2942,10 @@ function renderKpis(){
   acct:{v:fmtInt(nEn)+" / "+fmtInt(nPool),
         s:"暂存 "+fmtInt(nPend)+" · 禁用 "+fmtInt(nDis)+" · 受限 "+fmtInt(lim),
         cls:lim>0?"warn":""},
-  models:{v:fmtInt(d.models),s:"配置 deployments "+fmtInt(d.deployments),cls:""}};
+  models:{v:fmtInt(d.models)+" / "+fmtInt(d.deployments),s:"LiteLLM 去重模型 / deployment",tip:"模型为 LiteLLM /v1/models 去重数；deployment 为配置条目数，两者口径不同",cls:""}};
  $("kpis").innerHTML=KPIS.map(function(x){
   var v=vals[x.k]||{v:"-",s:""};
-  return '<div class="kpi" data-k="'+x.k+'" style="--k:'+x.c+'"><div class="k">'+x.n+'</div>'+
+  return '<div class="kpi" data-k="'+x.k+'" title="'+(v.tip||'')+'" style="--k:'+x.c+'"><div class="k">'+x.n+'</div>'+
    '<div class="v '+(v.cls||"")+'">'+v.v+'</div><div class="s">'+v.s+'</div></div>'}).join("");
  var topM=arr(d.by_model).slice(0,3).map(function(m){return m.model+" · "+fmtTok(m.tokens)}).join("<br/>")||"—";
  var topA=byAcct.slice(0,3).map(function(a){return acctName(a)+" · "+fmtTok(a.tt)}).join("<br/>")||"—";
@@ -3020,8 +3039,7 @@ function renderTimeline(){
   grid:gridOpt(30,54,6,10),
   xAxis:Object.assign({type:"category",boundaryGap:false,data:x,axisLabel:{color:"#8b93a3",fontSize:10.5,hideOverlap:true}},AX),
   yAxis:Object.assign({type:"value"},AX,{axisLabel:{color:"#8b93a3",fontSize:10.5,formatter:function(v){return fmtTok(v)}}}),
-  dataZoom:[{type:"inside",throttle:40},{type:"slider",height:14,bottom:6,borderColor:"#232833",
-   backgroundColor:"#12151c",fillerColor:"rgba(96,165,250,.16)",handleSize:"90%",textStyle:{color:"#8b93a3",fontSize:10}}],
+  dataZoom:[{type:"inside",throttle:40}],
   series:[L("总 Token","#60a5fa","tt",{areaStyle:{color:"rgba(96,165,250,.16)"}}),
           L("Prompt","#22d3ee","pt"),L("缓存命中","#4ade80","cached")]},true);
 }
@@ -3251,17 +3269,17 @@ function renderUsage(d){
 /* ---------------- 每个 KEY 的使用情况（实例键 / 账号键标签 / 主键直连） ---------------- */
 function renderKeyUsage(d){
  var rows=arr(d.key_usage),tb=$("keyUsage");if(!tb)return;
- var max=1;rows.forEach(function(k){max=Math.max(max,num(k.reqs))});
+ var max=0;rows.forEach(function(k){if(k.kind!=="direct")max=Math.max(max,num(k.reqs))});if(!max)max=1;
  var note=$("keyUsageNote"),tag=$("keyUsageTag");
  if(tag)tag.textContent=(d.key_usage_window||"当前范围")+" · "+rows.length+" 个 KEY";
  if(note&&d.key_usage_note)note.innerHTML=esc(d.key_usage_note);
  var kindName={instance:"实例键",account:"账号键标签",direct:"主键/直连",other:"其他标签"};
  tb.innerHTML=rows.map(function(k){
-  var pct=Math.max(0,Math.min(100,num(k.reqs)*100/max));
+  var pct=k.kind==="direct"?100:Math.max(0,Math.min(100,num(k.reqs)*100/max));
   var badge=k.kind==="instance"?"on":(k.kind==="account"?"warn":(k.kind==="direct"?"": "off"));
   return '<tr><td title="'+(k.raw?("原始标签: "+esc(k.raw)):"")+'">'+esc(k.label||"—")+(k.tail?" <span class='mono' style='color:#8b93a3'>…"+esc(k.tail)+"</span>":"")+
    "</td><td><span class='badge "+badge+"'>"+esc(kindName[k.kind]||k.kind)+"</span></td>"+
-   "<td class='num'>"+fmtInt(k.reqs)+"<div style='height:4px;background:#1f2937;border-radius:2px;margin-top:3px'><i style='display:block;height:4px;border-radius:2px;background:"+(k.kind==="instance"?"#60a5fa":(k.kind==="account"?"#fbbf24":"#6b7280"))+";width:"+pct.toFixed(1)+"%'></i></div></td>"+
+   "<td class='num'>"+fmtInt(k.reqs)+"<div style='height:4px;background:"+(isLightTheme()?"#e2e8f0":"#1f2937")+";border-radius:2px;margin-top:3px'><i style='display:block;height:4px;border-radius:2px;background:"+(k.kind==="instance"?"#60a5fa":(k.kind==="account"?"#fbbf24":"#8b93a3"))+";width:"+pct.toFixed(1)+"%'></i></div></td>"+
    "<td class='num'>"+fmtTok(k.pt)+"</td><td class='num'>"+fmtTok(k.ct)+"</td><td class='num'><b>"+fmtTok(k.tt)+"</b></td>"+
    "<td>"+(k.lastTs?fmtTs(k.lastTs):"—")+"</td></tr>"}).join("")||
   "<tr><td colspan='7' style='color:#8b93a3'>当前范围暂无请求日志</td></tr>"}
@@ -3311,7 +3329,7 @@ function renderAcctDetail(){
   var stTip=a.state==="limited"?("受限：上游 "+limList+" 窗口已打满（rate-limited），到重置时间自动恢复"):
     a.state==="error"?"查询失败：上游 usage 接口报错（形状见上方「上游 usage」行）":
     "正常：三个限额窗口都可用";
-  var wins=[["Rolling","rolling"],["Weekly","weekly"],["Monthly","monthly"]].map(function(w){
+  var wins=[["滚动","rolling"],["本周","weekly"],["每月","monthly"]].map(function(w){
    var v=obj(obj(a.windows)[w[1]]);
    if(v.percent==null)return '<div class="win"><div class="wn">'+w[0]+'</div>'+
     '<div class="donut-na" title="上游未返回该窗口的限额数据"><span>—</span></div>'+
@@ -3321,7 +3339,7 @@ function renderAcctDetail(){
    var abs=rms?fmtTs(rms):"",short=rms?fmtTsShort(rms):"";
    return '<div class="win"><div class="wn">'+w[0]+'</div>'+
     donutSvg(p,lim?"#f87171":p>=70?"#fbbf24":"#4ade80")+
-    '<div class="st '+(lim?"err":"ok")+'">'+esc(v.status||"unknown")+'</div>'+
+    '<div class="st '+(lim?"err":"ok")+'">'+esc(v.status==="ok"?"正常":v.status==="rate-limited"?"受限":(v.status||"未知"))+'</div>'+
     '<div class="rst" title="'+(abs?esc(abs)+" 重置":"")+'">'+(short?esc(short)+" · "+rel(v.resetsAt):"—")+'</div></div>'}).join("");
   var chips=u&&arr(u.models).length?arr(u.models).slice(0,4).map(function(m,i){
    return '<span class="chip" title="'+esc(m.model)+'：'+fmtInt(m.hits)+' 次 · '+fmtTok(m.tokens)+' tokens"><i class="cdot" style="background:'+
@@ -3744,7 +3762,8 @@ function initDashNav(){
   var next=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";
   document.documentElement.setAttribute("data-theme",next);
   LS.set(THEME_KEY,next);
-  if(TABCUR==="routing"&&RT){try{renderRouting(RT)}catch(e){}}
+  refreshChartTheme();
+  if(SUM){load()}else if(TABCUR==="routing"&&RT){try{renderRouting(RT)}catch(e){}}
   dashResizeSoon()});
  window.addEventListener("hashchange",function(){
   showTab((location.hash||"").slice(1)||"overview",true)});
